@@ -1,0 +1,189 @@
+@import url('https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:wght@300;400;500&display=swap');
+ 
+/* ── Global ── */
+html, body, [class*="css"] {
+    font-family: 'DM Sans', sans-serif;
+}
+ 
+/* Hide default streamlit chrome */
+#MainMenu, footer, header { visibility: hidden; }
+.block-container { padding-top: 1.5rem !important; }
+ 
+/* ── Sidebar ── */
+[data-testid="stSidebar"] {
+    background: #0d1117 !important;
+    border-right: 1px solid #1e2533;
+}
+[data-testid="stSidebar"] * { color: #c9d1d9 !important; }
+ 
+.sidebar-logo {
+    font-family: 'Syne', sans-serif;
+    font-size: 1.6rem;
+    font-weight: 800;
+    color: #f97316 !important;
+    letter-spacing: -0.5px;
+    padding: 0.5rem 0 1.5rem 0;
+    border-bottom: 1px solid #1e2533;
+    margin-bottom: 1rem;
+}
+.sidebar-logo span { color: #ffffff !important; }
+ 
+.sidebar-user {
+    font-size: 0.75rem;
+    color: #6e7681 !important;
+    padding: 0.75rem 0;
+    border-top: 1px solid #1e2533;
+    margin-top: 1rem;
+}
+ 
+/* ── Page header ── */
+.page-header {
+    font-family: 'Syne', sans-serif;
+    font-size: 2rem;
+    font-weight: 800;
+    color: #0d1117;
+    letter-spacing: -1px;
+    margin-bottom: 0.25rem;
+}
+.page-sub {
+    font-size: 0.85rem;
+    color: #6e7681;
+    margin-bottom: 2rem;
+}
+ 
+/* ── Metric cards ── */
+.metric-card {
+    background: #ffffff;
+    border: 1px solid #e5e7eb;
+    border-radius: 12px;
+    padding: 1.5rem;
+    box-shadow: 0 1px 4px rgba(0,0,0,0.06);
+    transition: box-shadow 0.2s;
+}
+.metric-card:hover { box-shadow: 0 4px 16px rgba(0,0,0,0.1); }
+.metric-label {
+    font-size: 0.75rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: #6e7681;
+    margin-bottom: 0.5rem;
+}
+.metric-value {
+    font-family: 'Syne', sans-serif;
+    font-size: 2.2rem;
+    font-weight: 800;
+    color: #0d1117;
+    line-height: 1;
+}
+.metric-accent { color: #f97316; }
+ 
+/* ── Section cards ── */
+.section-card {
+    background: #ffffff;
+    border: 1px solid #e5e7eb;
+    border-radius: 12px;
+    padding: 1.5rem;
+    margin-bottom: 1.25rem;
+    box-shadow: 0 1px 4px rgba(0,0,0,0.04);
+}
+.section-title {
+    font-family: 'Syne', sans-serif;
+    font-size: 1rem;
+    font-weight: 700;
+    color: #0d1117;
+    margin-bottom: 1rem;
+    padding-bottom: 0.5rem;
+    border-bottom: 2px solid #f97316;
+    display: inline-block;
+}
+ 
+/* ── Login page ── */
+.login-wrapper {
+    max-width: 420px;
+    margin: 4rem auto;
+    background: #ffffff;
+    border: 1px solid #e5e7eb;
+    border-radius: 16px;
+    padding: 2.5rem;
+    box-shadow: 0 8px 32px rgba(0,0,0,0.08);
+}
+.login-title {
+    font-family: 'Syne', sans-serif;
+    font-size: 1.8rem;
+    font-weight: 800;
+    color: #0d1117;
+    margin-bottom: 0.25rem;
+}
+.login-sub { font-size: 0.85rem; color: #6e7681; margin-bottom: 2rem; }
+ 
+/* ── Pill badge ── */
+.badge {
+    display: inline-block;
+    padding: 0.2rem 0.65rem;
+    border-radius: 99px;
+    font-size: 0.72rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+}
+.badge-green  { background: #dcfce7; color: #15803d; }
+.badge-orange { background: #ffedd5; color: #c2410c; }
+.badge-blue   { background: #dbeafe; color: #1d4ed8; }
+.badge-gray   { background: #f1f5f9; color: #475569; }
+ 
+/* ── Progress bar override ── */
+.stProgress > div > div > div > div {
+    background: linear-gradient(90deg, #f97316, #fb923c) !important;
+    border-radius: 99px !important;
+}
+.stProgress > div > div > div {
+    background: #f1f5f9 !important;
+    border-radius: 99px !important;
+    height: 8px !important;
+}
+ 
+/* ── Tabs ── */
+[data-testid="stTabs"] button {
+    font-family: 'DM Sans', sans-serif;
+    font-weight: 500;
+    color: #6e7681;
+}
+[data-testid="stTabs"] button[aria-selected="true"] {
+    color: #f97316 !important;
+    border-bottom-color: #f97316 !important;
+}
+ 
+/* ── Buttons ── */
+.stButton > button {
+    background: #0d1117;
+    color: #ffffff;
+    border: none;
+    border-radius: 8px;
+    font-family: 'DM Sans', sans-serif;
+    font-weight: 500;
+    padding: 0.5rem 1.25rem;
+    transition: background 0.2s, transform 0.1s;
+}
+.stButton > button:hover {
+    background: #f97316;
+    transform: translateY(-1px);
+}
+.stButton > button:active { transform: translateY(0); }
+ 
+/* ── Dataframe ── */
+[data-testid="stDataFrame"] {
+    border: 1px solid #e5e7eb !important;
+    border-radius: 10px !important;
+}
+ 
+/* ── Divider ── */
+hr { border-color: #e5e7eb; }
+ 
+/* ── Input fields ── */
+[data-testid="stTextInput"] input,
+[data-testid="stSelectbox"] select {
+    border-radius: 8px !important;
+    border-color: #e5e7eb !important;
+}
+ 
