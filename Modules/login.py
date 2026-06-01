@@ -2,8 +2,8 @@
 import streamlit as st
 from utils.auth import authenticate
  
-def showlogin():
-    # Center the login form
+def show_login():
+  
     col1, col2, col3 = st.columns([1, 1.6, 1])
     with col2:
         st.markdown(
@@ -21,11 +21,7 @@ def showlogin():
             unsafe_allow_html=True,
         )
  
-        st.markdown(
-            '<div style="background:#fff; border:1px solid #e5e7eb; border-radius:16px;'
-            'padding:2rem; box-shadow:0 8px 32px rgba(0,0,0,0.07);">',
-            unsafe_allow_html=True,
-        )
+      
  
         role_choice = st.radio(
             "Login as",
@@ -54,7 +50,7 @@ def showlogin():
                        (role_choice == "Reporting Manager" and user["role"] == "Reporting Manager") or \
                        (role_choice == "Team Member" and user["role"] == "Team Member"):
                         st.session_state.logged_in = True
-                        st.session_state.username  = username
+                        st.session_state.Username  = username
                         st.session_state.role      = user["role"]
                         st.session_state.team      = user["team"]
                         st.session_state.current_page = "Dashboard"
