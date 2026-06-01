@@ -25,8 +25,8 @@ else:
         st.markdown(f"**{st.session_state.get('team', 'AD_Tools Team')}**")
         st.markdown("---")
  
-        pages = ["Dashboard", "Employee Details", "Job List", "Reports", "Statusmail/Leave"]
-        icons = ["", "", "", "", ""]
+        pages = ["Dashboard", "Employee Details", "Job List", "Audit", "Reports", "Statusmail/Leave"]
+        icons = ["", "", "", "", "", ""]
  
         for icon, page in zip(icons, pages):
             if st.button(f"{icon} {page}", key=f"nav_{page}", use_container_width=True):
@@ -53,6 +53,9 @@ else:
     elif page == "Job List":
         from Modules.job_list import show_job_list
         show_job_list()
+    elif page == "Audit":
+        from Modules.audit_work import show_audit
+        show_audit()
     elif page == "Reports":
         from Modules.reports import show_reports
         show_reports()

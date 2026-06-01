@@ -16,6 +16,8 @@ from datetime import datetime
 from openpyxl import Workbook
 
 def show_job_list():
+    role=st.session_state.role
+    username=st.session_state.Username
     st.set_page_config(page_title="Job Tracker", layout="wide")
     filename = "job_tracker.xlsx"
     expected_columns = ["Record ID","Project ID","Project Name", "Employee ID", "Employee Name", "Job Undertaken", "Time Duration", "Progress", "Last Updated"]
@@ -30,7 +32,15 @@ def show_job_list():
 
     # Load data
     df = pd.read_excel(filename)
-
+    if "role" not in st.session_state:
+        st.session_state.role=None
+    if "Employee ID" not in st.session_state:
+        st.session_state.Employee_ID=None
+    if "logged_in" not in st.session_state:
+        st.session_state.logged_in=False
+    if "project_selected" not in st.session_state:
+        st.session_state.project_selected=False    
+    
     # Check if all expected columns exist, if not recreate the file
     if not all(col in df.columns for col in expected_columns):
         os.remove(filename)
@@ -72,7 +82,13 @@ def show_job_list():
     with tab1:
         st.subheader("Add Employee Job Details")
         with st.form("add form", clear_on_submit=True):
-            emp_id = st.text_input("Employee ID")
+            if role=="Reporting Manager":
+                emp_id= st.text_input("Employee ID")
+            else:
+                emp_id="self"
+                st.text_input("Employee ID", value="self", disabled=True)
+                st.text_input("Employee Name", value=username, disabled=True)
+                
             emp_name = st.text_input("Employee Name")
             job = st.selectbox("Job Undertaken", ["Requirement Document","Design Document","Coding","ITP","Testing","Audit Work"])
             duration = st.text_input("Time Duration")
@@ -89,6 +105,10 @@ def show_job_list():
     with tab2:
         df = pd.read_excel(filename)
         project_df = df[df["Project ID"].astype(str) == str(project_id)]
+        role=st.session_state.role
+        username=st.session_state.Username
+        if role=="Team Member":
+            project_df=project_df[project_df.astype(str)["Employee Name"].str.lower()==username]
         if not project_df.empty:
             project_df = project_df.sort_values(by=["Employee ID", "Employee Name"])
 
