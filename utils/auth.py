@@ -3,6 +3,8 @@ USERS={
     "srm":{"password":"srm123","role":"Reporting Manager","team":"AD_Tools Team"},
     "rish123":{"password":"rishika123","role":"Team Member","team":"AD_Tools Team"},
     "rish":{"password":"rishika123","role":"Reporting Manager","team":"AD_Tools Team"},
+    "sona12":{"password":"sona123","role":"Reporting Manager","team":"AD_Tools Team"},
+    "sona":{"password":"sona123","role":"Team Member","team":"AD_Tools Team"},
 
 
 }
