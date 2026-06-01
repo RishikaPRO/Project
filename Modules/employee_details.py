@@ -49,7 +49,7 @@ div[data-testid="stDataFrame"] {
     st.caption("View and manage employee information")
  
     # Read Excel
-    raw_df = pd.read_excel(r"C:\Users\jaspherfaithlins\Downloads\employeefinal (1).xlsx")
+    raw_df = pd.read_excel("employeefinal.xlsx")
     raw_df.columns = raw_df.columns.str.strip().str.lower()
     st.markdown('### Workforce Overview')
     c1,c2,c3,c4=st.columns(4)
@@ -145,7 +145,7 @@ div[data-testid="stDataFrame"] {
                 col1, col2, _ = st.columns([1, 1, 4])
  
                 if col1.button("Save", use_container_width=True):
-                    full_df = pd.read_excel(r"C:\Users\jaspherfaithlins\Downloads\employeefinal (1).xlsx")
+                    full_df = pd.read_excel("employeefinal.xlsx")
                     full_df.columns = full_df.columns.str.strip().str.lower()
  
                     emp_id = str(selected["Employee ID"]).strip()
@@ -161,7 +161,7 @@ div[data-testid="stDataFrame"] {
                     full_df.loc[mask, full_df.columns[3]] = new_desig
                     full_df.loc[mask, full_df.columns[4]] = new_status
  
-                    full_df.to_excel(r"C:\Users\jaspherfaithlins\Downloads\employeefinal (1).xlsx", index=False)
+                    full_df.to_excel("employeefinal.xlsx", index=False)
                     st.success(f"{selected_name} updated successfully!")
                     st.rerun()
  
