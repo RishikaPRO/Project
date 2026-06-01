@@ -1,10 +1,11 @@
-﻿#####Reporting Manager#####
+#####Reporting Manager#####
 
 #insert values
 #View added values in table
 #view Graphical representation of progress
 #Edit values and update progress
 #Delete values
+
 
 import streamlit as st
 import pandas as pd
@@ -13,7 +14,6 @@ import os
 import uuid
 from datetime import datetime
 from openpyxl import Workbook
-
 
 def show_job_list():
     st.set_page_config(page_title="Job Tracker", layout="wide")
@@ -79,17 +79,7 @@ def show_job_list():
             progress = st.slider("Progress", 0, 100, 0)
             add_btn = st.form_submit_button("Save")
             if add_btn:
-                new_row = {
-                    "Record ID": str(uuid.uuid4()),
-                    "Project ID": project_id,
-                    "Project Name": project_name,
-                    "Employee ID": emp_id,
-                    "Employee Name": emp_name,
-                    "Job Undertaken": job,
-                    "Time Duration": duration,
-                    "Progress": progress,
-                    "Last Updated": datetime.now(),
-                }
+                new_row = {"Record ID": str(uuid.uuid4()), "Project ID": project_id, "Project Name": project_name, "Employee ID": emp_id, "Employee Name": emp_name, "Job Undertaken": job, "Time Duration": duration, "Progress": progress, "Last Updated": datetime.now()}
                 df = pd.concat([df, pd.DataFrame([new_row])], ignore_index=True)
                 df.to_excel(filename, index=False)
                 st.success("Data Saved Successfully")
@@ -132,11 +122,7 @@ def show_job_list():
                     edit_row = edit_row.iloc[0]
                     st.subheader("Edit Record")
                     with st.form("edit_form"):
-                        new_job = st.selectbox(
-                            "Job Undertaken",
-                            ["Requirement Document", "Design Document", "Coding", "ITP", "Testing", "Audit Work"],
-                            index=["Requirement Document", "Design Document", "Coding", "ITP", "Testing", "Audit Work"].index(edit_row["Job Undertaken"]),
-                        )
+                        new_job = st.selectbox("Job Undertaken", ["Requirement Document", "Design Document", "Coding", "ITP", "Testing", "Audit Work"], index=["Requirement Document", "Design Document", "Coding", "ITP", "Testing", "Audit Work"].index(edit_row["Job Undertaken"]))
                         new_duration = st.text_input("Time Duration", value=str(edit_row["Time Duration"]))
                         new_progress = st.slider("Progress", 0, 100, int(edit_row["Progress"]))
                         update_btn = st.form_submit_button("Update")
