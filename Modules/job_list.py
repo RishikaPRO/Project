@@ -16,6 +16,48 @@ from datetime import datetime
 from openpyxl import Workbook
 
 def show_job_list():
+    st.markdown("""
+<style>
+ 
+/* Main page spacing */
+.block-container {
+    padding-top: 3rem;
+    padding-bottom:5rem;
+}
+ 
+/* Metric cards */
+[data-testid="metric-container"] {
+    background-color: #F5F7FA;
+    border: 1px solid #DDE2E7;
+    padding: 15px;
+    border-radius: 10px;
+}
+ 
+/* Section headings */
+h3 {
+    color: #1F3A5F;
+}
+ 
+/* Dataframe */
+div[data-testid="stDataFrame"] {
+    border: 1px solid #DDE2E7;
+    border-radius: 10px;
+}
+ 
+/* Buttons */
+.stButton button {
+    background-color: #1F3A5F;
+    color: white;
+    border-radius: 8px;
+    border: none;
+}
+ 
+.stButton button:hover {
+    background-color: #2B4E7A;
+}
+ 
+</style>
+""", unsafe_allow_html=True)
     role=st.session_state.role
     username=st.session_state.Username
     st.set_page_config(page_title="Job Tracker", layout="wide")
