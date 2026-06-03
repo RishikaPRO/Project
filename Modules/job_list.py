@@ -1,189 +1,216 @@
-#####Reporting Manager#####
-
-#insert values
-#View added values in table
-#view Graphical representation of progress
-#Edit values and update progress
-#Delete values
-
-
 import streamlit as st
 import pandas as pd
-import altair as alt
-import os
-import uuid
+from streamlit_calendar import calendar
+import random
 from datetime import datetime
-from openpyxl import Workbook
 
-def show_job_list():
-    role=st.session_state.role
-    username=st.session_state.Username
-    st.set_page_config(page_title="Job Tracker", layout="wide")
-    filename = "job_tracker.xlsx"
-    expected_columns = ["Record ID","Project ID","Project Name", "Employee ID", "Employee Name", "Job Undertaken", "Time Duration", "Progress", "Last Updated"]
+#Manager Class for Excel Operations
+class ExcelManager:
+    def __init__(self, file_path):
+        self.file_path = file_path
+    def load_data(self):
+        return pd.read_excel(self.file_path)
+    def save_data(self, df):
+        df.to_excel(self.file_path, index=False)
 
-    # Create Excel file if it doesn't exist
-    if not os.path.exists(filename):
-        wb = Workbook()
-        ws = wb.active
-        ws.title = "Job Tracker"
-        ws.append(expected_columns)
-        wb.save(filename)
+#Filter class for project data
+class ProjectFilter:
+    @staticmethod
+    def apply_filter(df, category, value):
+        mapping = {
+            "Project Type": "Project_Type",
+            "Project Team": "Project_Team",
+            "Language": "Language",
+            "Job Status": "Job_Status",
+            "Employee": "Employee_Name"
+        }
+        if category == "All":
+            return df
+        return df[df[mapping[category]] == value]
 
-    # Load data
-    df = pd.read_excel(filename)
-    if "role" not in st.session_state:
-        st.session_state.role=None
-    if "Employee ID" not in st.session_state:
-        st.session_state.Employee_ID=None
-    if "logged_in" not in st.session_state:
-        st.session_state.logged_in=False
-    if "project_selected" not in st.session_state:
-        st.session_state.project_selected=False    
-    
-    # Check if all expected columns exist, if not recreate the file
-    if not all(col in df.columns for col in expected_columns):
-        os.remove(filename)
-        wb = Workbook()
-        ws = wb.active
-        ws.title = "Job Tracker"
-        ws.append(expected_columns)
-        wb.save(filename)
-        df = pd.read_excel(filename)
+#Main function of the job_list page
+class JobListPage:
+    @classmethod
+    def show_job_list(cls):
+        st.title("Job List")
+        excel_file = "job_tracker.xlsx"
+        try:
+            excel = ExcelManager(excel_file)
+            df = excel.load_data()
+        except FileNotFoundError:
+            st.error("job_tracker.xlsx not found")
+            st.stop()
+        except PermissionError:
+            st.error("Excel file is currently open. Please close it.")
+            st.stop()
+        except Exception as e:
+            st.error(f"Error loading file: {e}")
+            st.stop()
 
-    # Project selection
-    if "project_selected" not in st.session_state:
-        st.session_state.project_selected = False
-    if not st.session_state.project_selected:
-        st.title("Open Project")
-        with st.form("project_form"):
-            st.subheader("Select Project")
-            project_id = st.text_input("Project ID")
-            project_name = st.text_input("Project Name")
-            start_button = st.form_submit_button("Open Project")
-            if start_button:
-                st.session_state.project_id = project_id
-                st.session_state.project_name = project_name
-                st.session_state.project_selected = True
-                st.rerun()
-        st.stop()
-
-    # Main page
-    project_id = st.session_state.project_id
-    project_name = st.session_state.project_name
-    st.title("Job Tracker Application")
-    st.markdown(f"# Project : {project_name}")
-    st.markdown(f"### Project ID : {project_id}")
-    st.divider()
-    project_df = df[df["Project ID"].astype(str) == str(project_id)]
-    tab1, tab2 = st.tabs(["Add Entry", "Dashboard"])
-
-    # Add Entry
-    with tab1:
-        st.subheader("Add Employee Job Details")
-        with st.form("add form", clear_on_submit=True):
-            if role=="Reporting Manager":
-                emp_id= st.text_input("Employee ID")
-            else:
-                emp_id="self"
-                st.text_input("Employee ID", value="self", disabled=True)
-                st.text_input("Employee Name", value=username, disabled=True)
-                
-            emp_name = st.text_input("Employee Name")
-            job = st.selectbox("Job Undertaken", ["Requirement Document","Design Document","Coding","ITP","Testing","Audit Work"])
-            duration = st.text_input("Time Duration")
-            progress = st.slider("Progress", 0, 100, 0)
-            add_btn = st.form_submit_button("Save")
-            if add_btn:
-                new_row = {"Record ID": str(uuid.uuid4()), "Project ID": project_id, "Project Name": project_name, "Employee ID": emp_id, "Employee Name": emp_name, "Job Undertaken": job, "Time Duration": duration, "Progress": progress, "Last Updated": datetime.now()}
-                df = pd.concat([df, pd.DataFrame([new_row])], ignore_index=True)
-                df.to_excel(filename, index=False)
-                st.success("Data Saved Successfully")
-                st.rerun()
-
-    # Dashboard
-    with tab2:
-        df = pd.read_excel(filename)
-        project_df = df[df["Project ID"].astype(str) == str(project_id)]
-        role=st.session_state.role
-        username=st.session_state.Username
-        if role=="Team Member":
-            project_df=project_df[project_df.astype(str)["Employee Name"].str.lower()==username]
-        if not project_df.empty:
-            project_df = project_df.sort_values(by=["Employee ID", "Employee Name"])
-
-        st.subheader("Employee Records")
+        # Project Selection
+        st.subheader("Project Selection")
+        project_ids = sorted(
+            df["Project_ID"].dropna().unique())
+        selected_project = st.selectbox(
+            "Select Project ID",
+            project_ids
+        )
+        project_df = df[
+            df["Project_ID"] == selected_project
+        ].copy()
         if project_df.empty:
-            st.info("No records available for this project.")
-        else:
-            for _, row in project_df.iterrows():
-                col1, col2, col3, col4 = st.columns([4, 2, 1, 1])
-                with col1:
-                    st.write(f"**{row['Employee Name']}** ({row['Employee ID']})")
-                    st.write(row["Job Undertaken"])
-                with col2:
-                    st.write(f"{row['Progress']}%")
-                with col3:
-                    if st.button("Edit", key=f"edit_{row['Record ID']}"):
-                        st.session_state.edit_record = row["Record ID"]
-                with col4:
-                    if st.button("Delete", key=f"delete_{row['Record ID']}"):
-                        df = df[df["Record ID"] != row["Record ID"]]
-                        df.to_excel(filename, index=False)
-                        st.success("Record Deleted")
-                        st.rerun()
+            st.warning("No project data found.")
+            return
+        project_name = project_df[
+            "Project_Name"
+        ].iloc[0]
+        st.text_input(
+            "Project Name",
+            value=project_name,
+            disabled=True
+        )
+        
+        #Filters for project data display
+        st.subheader("Filters")
+        filter_category= st.selectbox(
+            "Filter By",
+            [
+                "All",
+                "Project Type",
+                "Project Team",
+                "Language",
+                "Job Status",
+                "Employee"
+            ]
+        )
+        filtered_df = project_df.copy()
+        if filter_category != "All":
+            column_mapping = {
+                "Project Type": "Project_Type",
+                "Project Team": "Project_Team",
+                "Language": "Language",
+                "Job Status": "Job_Status",
+                "Employee": "Employee_Name"
+            }
+            selected_column = column_mapping[
+                filter_category
+            ]
+            value = st.selectbox(
+                f"Select {filter_category}",
+                sorted( project_df[selected_column].dropna().unique()))
+            filtered_df = ProjectFilter.apply_filter(project_df, filter_category, value )
+        
+        #Employee Table
+        st.subheader("Employee Details")
+        editable_columns = ["Project_ID","Project_Name","Employee_Name","Project_Type","Project_Team","Language","Job_Undertaken","Job_Status","Start_Date","End_Date"]
+        editable_df = filtered_df[
+            editable_columns
+        ].copy()
 
-            st.divider()
-            # Edit section
-            if "edit_record" in st.session_state:
-                record_id = st.session_state.edit_record
-                edit_row = df[df["Record ID"] == record_id]
-                if not edit_row.empty:
-                    edit_row = edit_row.iloc[0]
-                    st.subheader("Edit Record")
-                    with st.form("edit_form"):
-                        new_job = st.selectbox("Job Undertaken", ["Requirement Document", "Design Document", "Coding", "ITP", "Testing", "Audit Work"], index=["Requirement Document", "Design Document", "Coding", "ITP", "Testing", "Audit Work"].index(edit_row["Job Undertaken"]))
-                        new_duration = st.text_input("Time Duration", value=str(edit_row["Time Duration"]))
-                        new_progress = st.slider("Progress", 0, 100, int(edit_row["Progress"]))
+        header_cols = st.columns([1] * len(editable_columns) + [0.7])
+        for col_obj, col_name in zip(header_cols[:-1], editable_columns):
+            col_obj.markdown(f"**{col_name}**")
+        header_cols[-1].markdown("**Edit**")
+
+        if "edit_record" not in st.session_state:
+            st.session_state.edit_record = None
+
+        for row_index, row in editable_df.iterrows():
+            row_cols = st.columns([1] * len(editable_columns) + [0.7])
+            for col_obj, col_name in zip(row_cols[:-1], editable_columns):
+                col_obj.write(row[col_name])
+            if row_cols[-1].button("Edit", key=f"edit_{row_index}"):
+                st.session_state.edit_record = row_index
+
+            if st.session_state.edit_record == row_index:
+                with st.expander("Edit this row", expanded=True):
+                    with st.form(f"edit_form_{row_index}"):
+                        new_values = {}
+                        for field in editable_columns:
+                            if field == "Job_Undertaken":
+                                options = ["Requirement Document", "Design Document", "Coding", "ITP", "Testing", "Audit Work"]
+                                selected_index = 0
+                                try:
+                                    selected_index = options.index(str(row[field]))
+                                except ValueError:
+                                    selected_index = 0
+                                new_values[field] = st.selectbox(
+                                    "Job Undertaken",
+                                    options,
+                                    index=selected_index,
+                                    key=f"job_{row_index}"
+                                )
+                            else:
+                                new_values[field] = st.text_input(field, value=str(row[field]), key=f"{field}_{row_index}")
                         update_btn = st.form_submit_button("Update")
+
                         if update_btn:
-                            df.loc[df["Record ID"] == record_id, "Time Duration"] = new_duration
-                            df.loc[df["Record ID"] == record_id, "Progress"] = new_progress
-                            df.loc[df["Record ID"] == record_id, "Job Undertaken"] = new_job
-                            df.loc[df["Record ID"] == record_id, "Last Updated"] = datetime.now()
-                            df.to_excel(filename, index=False)
-                            del st.session_state.edit_record
-                            st.success("Record Updated")
-                            st.rerun()
+                            for field, value in new_values.items():
+                                df.loc[row_index, field] = value
+                            df.loc[row_index, "Last Updated"] = datetime.now()
+                            excel.save_data(df)
+                            st.success("Row updated and saved to Excel.")
+                            st.session_state.edit_record = None
+                            st.experimental_rerun()
+            else:
+                st.session_state.edit_record = None
 
-            st.divider()
-            st.subheader("Employee Progress Tracking")
-            employee_groups = project_df.groupby("Employee ID")
-            for emp_id, emp_data in employee_groups:
-                emp_name = emp_data.iloc[0]["Employee Name"]
-                st.markdown(f"### Employee : {emp_name} ({emp_id})")
-                for _, row in emp_data.iterrows():
-                    col1, col2 = st.columns([3, 3])
-                    with col1:
-                        st.write(f"**{row['Job Undertaken']}**")
-                        st.write(f"Duration : {row['Time Duration']}")
-                    with col2:
-                        st.progress(int(row["Progress"]))
-                        st.write(f"{row['Progress']}% Completed")
-                st.divider()
+        #Save changes to Excel
+        st.markdown("---")
+        if st.button("Save All Changes"):
+            try:
+                updated_project_df = editable_df.copy()
+                remaining_df = df[df["Project_ID"] != selected_project]
+                final_df = pd.concat(
+                    [remaining_df,updated_project_df],ignore_index=True)
+                excel.save_data(final_df)
+                st.success("Changes saved successfully.")
+            except PermissionError:
+                st.error("Please close the Excel file before saving.")
+            except Exception as e:
+                st.error(f"Unable to save data: {e}")
+        
+        #Calendar view
+        st.markdown("---")
+        st.subheader("Project Calendar")
+        events = []  
+        for _, row in filtered_df.iterrows():
+            start_date = pd.to_datetime(row["Start_Date"],errors="coerce")
+            end_date = pd.to_datetime(row["End_Date"],errors="coerce")
+       
+            if pd.isna(start_date) or pd.isna(end_date):
+                continue
+            #Calendar color scheme
+            job_colors = {
+                "Understanding Document": "#063888",
+                "Design Document": "#0C411A",
+                "Coding": "#E6CC7E",
+                "Testing": "#51150F",
+                "Audit": "#4D4949",
+                "ITP": "#4A0D3D"
+            }
+     
+            events.append({
+                "title": f"{row['Employee_Name']} - {row['Job_Undertaken']}",
+                "start": start_date.strftime("%Y-%m-%d"),
+                "end": end_date.strftime("%Y-%m-%d"),
+                "color": job_colors.get(row["Job_Undertaken"])
+            })
 
-            st.subheader("Progress Visualization")
-            chart = alt.Chart(project_df).mark_bar().encode(
-                x=alt.X("Employee Name:N", title="Employee"),
-                y=alt.Y("Progress:Q", title="Progress %"),
-                color="Job Undertaken:N",
-                tooltip=["Employee Name", "Employee ID", "Job Undertaken", "Progress"],
-            ).properties(height=450)
-            st.altair_chart(chart, use_container_width=True)
+        calendar(events=events,options={
+           "initialView": "dayGridMonth",
+           "headerToolbar": {
+               "left": "prev,next today",
+               "center": "title",
+               "right": "dayGridMonth"
+           },
+           "editable": False,
+           "selectable": False,
+           "navLinks": True,
+           "height": 700
+       },
+       key="project_calendar"
+    )
 
-    st.divider()
-    if st.button("Open Another Project"):
-        st.session_state.project_selected = False
-        if "edit_record" in st.session_state:
-            del st.session_state.edit_record
-        st.rerun()
+show_job_list = JobListPage.show_job_list
+ 
