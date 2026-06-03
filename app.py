@@ -34,10 +34,10 @@ else:
                 st.rerun()
  
         st.markdown("---")
-        st.markdown(f"👤 **{st.session_state.get('username','').title()}**")
+        st.markdown(f"**{st.session_state.get('username','').title()}**")
         st.markdown(f"_{st.session_state.get('role','')}_")
  
-        if st.button("🚪 Logout", use_container_width=True):
+        if st.button("Logout", use_container_width=True):
             for key in list(st.session_state.keys()):
                 del st.session_state[key]
             st.rerun()

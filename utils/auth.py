@@ -1,15 +1,17 @@
-USERS={
-    "manager":{"password":"manager123","role":"Reporting Manager","team":"AD_Tools Team"},
-    "srm":{"password":"srm123","role":"Reporting Manager","team":"AD_Tools Team"},
-    "rish123":{"password":"rishika123","role":"Team Member","team":"AD_Tools Team"},
-    "rish":{"password":"rishika123","role":"Reporting Manager","team":"AD_Tools Team"},
-    "sona12":{"password":"sona123","role":"Reporting Manager","team":"AD_Tools Team"},
-    "sona":{"password":"sona123","role":"Team Member","team":"AD_Tools Team"},
-
-
-}
+import pandas as pd
+EXCEL_FILE="Login.xlsx"
 def authenticate(username,password):
-    user=USERS.get(username.lower())
-    if user and user["password"]==password:
-        return user
-    return False
+    try:
+        df=pd.read_excel(EXCEL_FILE)
+        df.columns=df.columns.str.strip().str.lower()
+        user=df[(df["username"].astype(str)==str(username)) & (df["password"].astype(str)==str(password))]
+        if not user.empty:
+            row=user.iloc[0]
+            return {
+                "role":row["role"],
+                "team":row["team"]}
+        else:
+            return None
+    except Exception as e:
+        print(f"Error during authentication: {e}")
+        return None
