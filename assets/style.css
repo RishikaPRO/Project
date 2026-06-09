@@ -5,11 +5,11 @@ html, body, [class*="css"] {
     font-family: 'DM Sans', sans-serif;
 }
  
-/* Hide default streamlit chrome */
+/*default streamlit hidden*/
 #MainMenu, footer, header { visibility: hidden; }
 .block-container { padding-top: 1.5rem !important; }
  
-/* ── Sidebar ── */
+/* Sidebar */
 [data-testid="stSidebar"] {
     background: #0d1117 !important;
     border-right: 1px solid #1e2533;
@@ -36,7 +36,7 @@ html, body, [class*="css"] {
     margin-top: 1rem;
 }
  
-/* ── Page header ── */
+/* Page header */
 .page-header {
     font-family: 'Syne', sans-serif;
     font-size: 2rem;
@@ -51,7 +51,7 @@ html, body, [class*="css"] {
     margin-bottom: 2rem;
 }
  
-/* ── Metric cards ── */
+/*Metric cards*/
 .metric-card {
     background: #ffffff;
     border: 1px solid #e5e7eb;
@@ -78,7 +78,7 @@ html, body, [class*="css"] {
 }
 .metric-accent { color: #f97316; }
  
-/* ── Section cards ── */
+/* Section */
 .section-card {
     background: #ffffff;
     border: 1px solid #e5e7eb;
@@ -97,8 +97,7 @@ html, body, [class*="css"] {
     border-bottom: 2px solid #f97316;
     display: inline-block;
 }
- 
-/* ── Login page ── */
+/* login page*/
 .login-wrapper {
     max-width: 420px;
     margin: 4rem auto;
@@ -117,7 +116,7 @@ html, body, [class*="css"] {
 }
 .login-sub { font-size: 0.85rem; color: #6e7681; margin-bottom: 2rem; }
  
-/* ── Pill badge ── */
+
 .badge {
     display: inline-block;
     padding: 0.2rem 0.65rem;
@@ -132,7 +131,7 @@ html, body, [class*="css"] {
 .badge-blue   { background: #dbeafe; color: #1d4ed8; }
 .badge-gray   { background: #f1f5f9; color: #475569; }
  
-/* ── Progress bar override ── */
+/* Progress bar colour*/
 .stProgress > div > div > div > div {
     background: linear-gradient(90deg, #f97316, #fb923c) !important;
     border-radius: 99px !important;
@@ -154,8 +153,7 @@ html, body, [class*="css"] {
     border-bottom-color: #f97316 !important;
 }
  
-/* ── Buttons ── */
-.stButton > button {
+/* ── Buttons ── */.stButton > button {
     background: #0d1117;
     color: #ffffff;
     border: none;
@@ -171,16 +169,16 @@ html, body, [class*="css"] {
 }
 .stButton > button:active { transform: translateY(0); }
  
-/* ── Dataframe ── */
+
 [data-testid="stDataFrame"] {
     border: 1px solid #e5e7eb !important;
     border-radius: 10px !important;
 }
  
-/* ── Divider ── */
+
 hr { border-color: #e5e7eb; }
  
-/* ── Input fields ── */
+
 [data-testid="stTextInput"] input,
 [data-testid="stSelectbox"] select {
     border-radius: 8px !important;

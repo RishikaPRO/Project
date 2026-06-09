@@ -2,68 +2,6 @@ import streamlit as st
 import pandas as pd
 from streamlit_calendar import calendar
 import random
-<<<<<<< HEAD
-from datetime import datetime
-from styles import load_css
-
-#Manager Class for Excel Operations
-class ExcelManager:
-    def __init__(self, file_path):
-        self.file_path = file_path
-    def load_data(self):
-        return pd.read_excel(self.file_path)
-    def save_data(self, df):
-        df.to_excel(self.file_path, index=False)
-
-#Filter class for project data
-class ProjectFilter:
-    @staticmethod
-    def apply_filter(df, category, value):
-        mapping = {
-            "Project Type": "Project_Type",
-            "Project Team": "Project_Team",
-            "Language": "Language",
-            "Job Status": "Job_Status",
-            "Employee": "Employee_Name"
-        }
-        if category == "All":
-            return df
-        return df[df[mapping[category]] == value]
-
-#Main function of the job_list page
-class JobListPage:
-    @classmethod
-    def show_job_list(cls):
-        load_css()
-        st.title("Job List")
-        excel_file = "job_tracker.xlsx"
-        try:
-            excel = ExcelManager(excel_file)
-            df = excel.load_data()
-        except FileNotFoundError:
-            st.error("job_tracker.xlsx not found")
-            st.stop()
-        except PermissionError:
-            st.error("Excel file is currently open. Please close it.")
-            st.stop()
-        except Exception as e:
-            st.error(f"Error loading file: {e}")
-            st.stop()
-
-        # Project Selection
-        st.subheader("Project Selection")
-        project_ids = sorted(
-            df["Project_ID"].dropna().unique())
-        selected_project = st.selectbox(
-            "Select Project ID",
-            project_ids
-        )
-        project_df = df[
-            df["Project_ID"] == selected_project
-        ].copy()
-        if project_df.empty:
-            st.warning("No project data found.")
-=======
 class JobListPage:
     FILE = "AD_Weekly_Load_Tracking_2026-27.xlsx"
     # ---------------- LOAD ----------------
@@ -112,9 +50,8 @@ class JobListPage:
             df[col]=df[col].astype("object")
         if df.empty:
             st.error("No usable data found")
->>>>>>> bf1327778f1af11554c5d05d965d974ef814b5c4
             return
-
+ 
         # ---------------- EDIT BUTTON (BOTTOM) ----------------
         st.subheader("Project Table")
         st.dataframe(df, use_container_width=True)
@@ -171,7 +108,8 @@ class JobListPage:
             },
             key="calendar"
         )
-
+ 
 def show_job_list():
     JobListPage().show()
+ 
  

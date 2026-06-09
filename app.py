@@ -54,7 +54,7 @@ else:
         show_dashboard()
     elif page == "Employee Details":
         from Modules.employee_details import show_employee_details
-        show_employee_details()
+        show_employee_details() 
     elif page == "Job List":
         from Modules.job_list import show_job_list
         show_job_list()

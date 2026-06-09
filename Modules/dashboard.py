@@ -5,8 +5,9 @@ import plotly.express as px
  
  
 def show_dashboard():
- 
     load_css()
+ 
+    
  
     st.title("Dashboard")
  
@@ -15,6 +16,8 @@ def show_dashboard():
  
     employee_name = username
     reporting_manager = "Not Assigned"
+  
+
  
     try:
  
