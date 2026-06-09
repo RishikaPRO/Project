@@ -1,13 +1,16 @@
 import streamlit as st
 import pandas as pd
 import os
- 
+from styles import load_css
  
 class EmployeeDetailsPage:
- 
+    #load method to read excel and show details
     def show(self):
+        load_css()
+    
  
         st.title("Employee Details")
+        #css script for styling
         st.markdown("""
 <style>
 .block-container { padding-top: 3rem; padding-bottom: 5rem; }
@@ -32,6 +35,7 @@ div[data-testid="stDataFrame"] { border: 1px solid #DDE2E7; border-radius: 10px;
         except Exception as e:
             st.error(f"Failed to load employee data: {e}")
             return
+        #display metrics as cards and table for employee details
  
         st.markdown('### Workforce Overview')
         c1, c2, c3, c4 = st.columns(4)
@@ -87,7 +91,7 @@ div[data-testid="stDataFrame"] { border: 1px solid #DDE2E7; border-radius: 10px;
         st.markdown("---")
         st.subheader("Employee Directory")
  
-        # Filter section
+        # Filter section to filter employee details based on name, department and status and edit
         with st.expander("Filters", expanded=True):
             f1, f2, f3 = st.columns(3)
             with f1:
@@ -114,9 +118,13 @@ div[data-testid="stDataFrame"] { border: 1px solid #DDE2E7; border-radius: 10px;
         if filtered_df.empty:
             st.info("No employees found matching the criteria.")
             return
+        
+        #displaying the filtered dataframe with selected columns and hide index
  
         display_df = filtered_df[["Employee ID", "Name", "Department", "Designation", "Status", "DOB", "Date of Joining", "Email", "Phone NO"]].reset_index(drop=True)
         st.dataframe(display_df, use_container_width=True, hide_index=True)
+        
+        #option to edit employee details for reporting manager role
  
         if role == "Reporting Manager":
             st.markdown("---")

@@ -3,6 +3,7 @@ import pandas as pd
 from streamlit_calendar import calendar
 import random
 from datetime import datetime
+from styles import load_css
 
 #Manager Class for Excel Operations
 class ExcelManager:
@@ -32,6 +33,7 @@ class ProjectFilter:
 class JobListPage:
     @classmethod
     def show_job_list(cls):
+        load_css()
         st.title("Job List")
         excel_file = "job_tracker.xlsx"
         try:

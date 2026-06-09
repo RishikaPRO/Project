@@ -6,6 +6,7 @@ st.set_page_config(
     layout="wide",
     initial_sidebar_state="expanded"
 )
+#Using SessionState for navigating to dashboards
  
 if "logged_in" not in st.session_state:
     st.session_state.logged_in = False
@@ -20,6 +21,7 @@ if not st.session_state.logged_in:
     from Modules.login import show_login
     show_login()
 else:
+    #Creating Sidebar for displaying different dashboards
     with st.sidebar:
         st.markdown("## 🛠️ AD-Tools")
         st.markdown(f"**{st.session_state.get('team', 'AD_Tools Team')}**")
@@ -27,6 +29,8 @@ else:
  
         pages = ["Dashboard", "Employee Details", "Job List", "Audit", "Reports", "Statusmail/Leave"]
         icons = ["", "", "", "", "", ""]
+        
+  
  
         for icon, page in zip(icons, pages):
             if st.button(f"{icon} {page}", key=f"nav_{page}", use_container_width=True):
@@ -43,6 +47,7 @@ else:
             st.rerun()
  
     page = st.session_state.current_page
+    #Redirecting to the respective Dashboard
  
     if page == "Dashboard":
         from Modules.dashboard import show_dashboard
