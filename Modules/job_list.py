@@ -2,133 +2,105 @@ import streamlit as st
 import pandas as pd
 from streamlit_calendar import calendar
 import random
-<<<<<<< HEAD
-from datetime import datetime
 from styles import load_css
 
-#Manager Class for Excel Operations
-class ExcelManager:
-    def __init__(self, file_path):
-        self.file_path = file_path
-    def load_data(self):
-        return pd.read_excel(self.file_path)
-    def save_data(self, df):
-        df.to_excel(self.file_path, index=False)
-
-#Filter class for project data
-class ProjectFilter:
-    @staticmethod
-    def apply_filter(df, category, value):
-        mapping = {
-            "Project Type": "Project_Type",
-            "Project Team": "Project_Team",
-            "Language": "Language",
-            "Job Status": "Job_Status",
-            "Employee": "Employee_Name"
-        }
-        if category == "All":
-            return df
-        return df[df[mapping[category]] == value]
-
-#Main function of the job_list page
-class JobListPage:
-    @classmethod
-    def show_job_list(cls):
-        load_css()
-        st.title("Job List")
-        excel_file = "job_tracker.xlsx"
-        try:
-            excel = ExcelManager(excel_file)
-            df = excel.load_data()
-        except FileNotFoundError:
-            st.error("job_tracker.xlsx not found")
-            st.stop()
-        except PermissionError:
-            st.error("Excel file is currently open. Please close it.")
-            st.stop()
-        except Exception as e:
-            st.error(f"Error loading file: {e}")
-            st.stop()
-
-        # Project Selection
-        st.subheader("Project Selection")
-        project_ids = sorted(
-            df["Project_ID"].dropna().unique())
-        selected_project = st.selectbox(
-            "Select Project ID",
-            project_ids
-        )
-        project_df = df[
-            df["Project_ID"] == selected_project
-        ].copy()
-        if project_df.empty:
-            st.warning("No project data found.")
-=======
 class JobListPage:
     FILE = "AD_Weekly_Load_Tracking_2026-27.xlsx"
-    # ---------------- LOAD ----------------
+   # ---------------- AUTO HEADER DETECTION ----------------
+    def detect_header_row(self, df):
+        """
+        Finds row containing 'Project ID' or similar keyword
+        """
+        for i in range(min(30, len(df))):
+            row = df.iloc[i].astype(str).str.lower()
+            if row.str.contains("project id").any():
+                return i
+        return 0  # fallback
+   # ---------------- LOAD ----------------
     def load_data(self):
         xl = pd.ExcelFile(self.FILE)
-        records = []
+        all_data = []
         for sheet in xl.sheet_names:
-            df = pd.read_excel(self.FILE, sheet_name=sheet, header=None)
-            for i in range(4, 17):
-                row = df.iloc[i]
-                if row.isnull().all():
+            raw = pd.read_excel(self.FILE, sheet_name=sheet, header=None)
+            raw = raw.dropna(how="all")
+            # -------- FIND HEADER ROW --------
+            header_row = None
+            for i in range(min(20, len(raw))):
+                row = raw.iloc[i].astype(str).str.lower()
+                if "project id" in row.values or row.str.contains("project id").any():
+                    header_row = i
+                    break
+                if header_row is None:
                     continue
-                project_id = row[2]
-                if pd.isna(project_id):
+        # -------- READ PROPER TABLE --------
+            df = pd.read_excel(
+               self.FILE,
+               sheet_name=sheet,
+               header=header_row
+            )
+            df.columns = df.columns.astype(str).str.strip()
+            # -------- CLEAN EMPTY ROWS --------
+            df = df.dropna(how="all")
+        # -------- NORMALIZE COLUMN ACCESS --------
+            def col(name):
+                return df[name] if name in df.columns else ""
+            for _, r in df.iterrows():
+                pid = r.get("Project ID", "")
+                if pd.isna(pid) or str(pid).strip() == "":
                     continue
-                project_id = str(project_id).strip()
-                if project_id.lower() in ["leads", "project id", "nan"]:
+                pid = str(pid).strip()
+                if pid.lower() in ["nan", "none", "leads", "project id"]:
                     continue
-                def safe(idx):
-                    return row[idx] if len(row) > idx else None
-                records.append({
-                    "Project ID": project_id,
-                    "Project Name": safe(3),
-                    "Project Type": safe(4),
-                    "Project Team": safe(10),
-                    "Team Members": safe(6),
-                    "Language": safe(14),
-                    "Job Status": safe(16),
-                    "Start Date": safe(11),
-                    "Release Date": safe(12)
+                all_data.append({
+                    "Project ID": pid,
+                   "Project Name": r.get("Project Name", ""),
+                   "Project Type": r.get("Project Type", ""),
+                   "Project Team": r.get("Project Team", ""),
+                   "Team Members": r.get("Team Members", ""),
+                   "Language": r.get("Language", ""),
+                   "Job Status": r.get("Job Status", ""),
+                   "Start Date": r.get("Start Date", ""),
+                  "Release Date": r.get("Release Date", "")
                 })
-        return pd.DataFrame(records)
-    # ---------------- SAVE ----------------
+        return pd.DataFrame(all_data)
+         # ---------------- SAVE ----------------
     def save_update(self, df):
-        df.to_excel(self.FILE, index=False)
+            df.to_excel(self.FILE, index=False)
     # ---------------- COLOR ----------------
     def color(self, pid):
         random.seed(str(pid))
         return "#{:06x}".format(random.randint(0, 0xFFFFFF))
     # ---------------- UI ----------------
     def show(self):
-        st.title(" Job List Dashboard")
+        load_css()
+        st.title("Job List Dashboard")
         df = self.load_data()
-        df=df.fillna("")
-        for col in df.columns:
-            df[col]=df[col].astype("object")
         if df.empty:
             st.error("No usable data found")
->>>>>>> bf1327778f1af11554c5d05d965d974ef814b5c4
             return
-
-        # ---------------- EDIT BUTTON (BOTTOM) ----------------
+        df = df.fillna("")
+       # ---------------- TABLE ----------------
         st.subheader("Project Table")
         st.dataframe(df, use_container_width=True)
         st.divider()
+        # ---------------- EDIT ----------------
         st.subheader("Edit Project")
         project_ids = df["Project ID"].dropna().unique().tolist()
+        if not project_ids:
+            st.warning("No Project IDs found")
+            return
         selected_id = st.selectbox("Select Project ID", project_ids)
-        selected_row = df[df["Project ID"] == selected_id].iloc[0]
+        filtered = df[df["Project ID"] == selected_id]
+        if filtered.empty:
+            st.error("Project not found")
+            return
+        selected_row = filtered.iloc[0]
         with st.form("edit_form"):
             new_name = st.text_input("Project Name", selected_row["Project Name"])
             new_type = st.text_input("Project Type", selected_row["Project Type"])
             new_team = st.text_input("Team Members", selected_row["Team Members"])
             new_status = st.text_input("Job Status", selected_row["Job Status"])
-            new_start =  st.text_input("Start Date", selected_row["Start Date"])
+            new_start = st.text_input("Start Date", selected_row["Start Date"])
             new_end = st.text_input("Release Date", selected_row["Release Date"])
             save = st.form_submit_button("Save Changes")
         if save:
@@ -138,8 +110,13 @@ class JobListPage:
             df.loc[df["Project ID"] == selected_id, "Job Status"] = new_status
             df.loc[df["Project ID"] == selected_id, "Start Date"] = new_start
             df.loc[df["Project ID"] == selected_id, "Release Date"] = new_end
-            df.to_excel(self.FILE, index=False)
-            st.success(" Updated successfully")
+            self.save_update(df)
+            st.success("Updated successfully")
+            st.rerun()
+        if st.button("Delete Record", key=f"btn_delete_{selected_id}"):
+            df = df[df["Project ID"] != selected_id]
+            self.save_update(df)
+            st.success("Record deleted")
             st.rerun()
         # ---------------- CALENDAR ----------------
         st.divider()
@@ -173,5 +150,4 @@ class JobListPage:
         )
 
 def show_job_list():
-    JobListPage().show()
- 
+   JobListPage().show()
