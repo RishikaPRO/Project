@@ -2,11 +2,8 @@ import streamlit as st
 import pandas as pd
 from streamlit_calendar import calendar
 import random
-<<<<<<< HEAD
-=======
 from styles import load_css
 
->>>>>>> 5b72b87223c9608fba0877c163f02ab97d43c888
 class JobListPage:
     FILE = "AD_Weekly_Load_Tracking_2026-27.xlsx"
    # ---------------- AUTO HEADER DETECTION ----------------
@@ -81,13 +78,8 @@ class JobListPage:
         if df.empty:
             st.error("No usable data found")
             return
-<<<<<<< HEAD
  
         # ---------------- EDIT BUTTON (BOTTOM) ----------------
-=======
-        df = df.fillna("")
-       # ---------------- TABLE ----------------
->>>>>>> 5b72b87223c9608fba0877c163f02ab97d43c888
         st.subheader("Project Table")
         st.dataframe(df, use_container_width=True)
         st.divider()
@@ -158,10 +150,6 @@ class JobListPage:
         )
  
 def show_job_list():
-<<<<<<< HEAD
     JobListPage().show()
  
  
-=======
-   JobListPage().show()
->>>>>>> 5b72b87223c9608fba0877c163f02ab97d43c888

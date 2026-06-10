@@ -1,10 +1,12 @@
 # pages/login.py
 import streamlit as st
 from utils.auth import authenticate
+#Function to authenticate Login details
  
 def show_login():
   
     col1, col2, col3 = st.columns([1, 1.6, 1])
+    #css script for better layout
     with col2:
         st.markdown(
             """
@@ -30,15 +32,19 @@ def show_login():
         )
  
         st.markdown("<br>", unsafe_allow_html=True)
+        #Input Details
         username = st.text_input("Username", placeholder="Enter your username")
         password = st.text_input("Password", type="password", placeholder="Enter your password")
- 
+
+        #Login and Reset Buttons 
         col_a, col_b = st.columns(2)
         with col_a:
             login_clicked = st.button("Login", use_container_width=True)
         with col_b:
             if st.button("Reset", use_container_width=True):
                 st.rerun()
+        
+        #Authentication of login details from utils.auth by reading Login.xlsx
  
         if login_clicked:
             if not username or not password:
