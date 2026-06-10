@@ -7,9 +7,18 @@ class EmployeeDetailsPage:
     #load method to read excel and show details
     def show(self):
         load_css()
+        st.markdown("""
+        <div style='
+        padding:20px;
+            border-radius:12px;
+            background:linear-gradient(90deg,#0f172a,#1e293b);
+            color:white;
+            margin-bottom:20px;
+        '>
+    <h2 style='margin:0;'>Employee Details</h2>
+        </div>
+                    """, unsafe_allow_html=True)
     
- 
-        st.title("Employee Details")
         #css script for styling
         st.markdown("""
 <style>

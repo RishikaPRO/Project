@@ -51,19 +51,24 @@ class AuditWorkPage:
     def save_record(self, sheet_name, excel_row, project_status, audit_type, audit_date, auditee):
         wb = load_workbook(self.AUDIT_FILE)
         ws = wb[sheet_name]
- 
-            
- 
+   
         wb.save(self.AUDIT_FILE)
  
     def show(self):
         #loading styles.py for styling the page.
         load_css()
-        
-   
- 
- 
-        st.title("Audit Work")
+        st.markdown("""
+        <div style='
+        padding:20px;
+            border-radius:12px;
+            background:linear-gradient(90deg,#0f172a,#1e293b);
+            color:white;
+            margin-bottom:20px;
+        '>
+    <h2 style='margin:0;'>Audit Work </h2>
+        </div>
+                    """, unsafe_allow_html=True)
+
  
         try:
             df = self.load_data()

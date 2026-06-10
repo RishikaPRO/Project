@@ -7,8 +7,17 @@ import plotly.express as px
 def show_dashboard():
  
     load_css()
- 
-    st.title("Dashboard")
+    st.markdown("""
+        <div style='
+        padding:20px;
+            border-radius:12px;
+            background:linear-gradient(90deg,#0f172a,#1e293b);
+            color:white;
+            margin-bottom:20px;
+        '>
+    <h2 style='margin:0;'>Dashboard</h2>
+        </div>
+                    """, unsafe_allow_html=True)
  
     username = st.session_state.get("Username", "")
     role = st.session_state.get("role", "")
