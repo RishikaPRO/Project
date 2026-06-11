@@ -19,10 +19,7 @@ def show_login():
             </div>
             """,
             unsafe_allow_html=True,
-        )
- 
-      
- 
+        ) 
         role_choice = st.radio(
             "Login as",
             ["Reporting Manager", "Team Member"],

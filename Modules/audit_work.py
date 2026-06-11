@@ -11,7 +11,6 @@ class AuditWorkPage:
     def load_data(self):
         excel_file = pd.ExcelFile(self.AUDIT_FILE)
         records = []
- 
         for sheet in excel_file.sheet_names:
             ws_df = pd.read_excel(self.AUDIT_FILE, sheet_name=sheet, header=None)
  
@@ -51,9 +50,7 @@ class AuditWorkPage:
     def save_record(self, sheet_name, excel_row, project_status, audit_type, audit_date, auditee):
         wb = load_workbook(self.AUDIT_FILE)
         ws = wb[sheet_name]
-   
         wb.save(self.AUDIT_FILE)
- 
     def show(self):
         #loading styles.py for styling the page.
         load_css()
@@ -81,11 +78,9 @@ class AuditWorkPage:
         c1.metric("Total Audits", len(df))
         c2.metric("Projects", df["Project ID"].nunique())
         c3.metric("Weeks", df["Sheet"].nunique())
- 
         st.divider()
  
         search = st.text_input("Search Project ID / Project Name")
- 
         if search:
             df = df[
                 df["Project ID"].str.contains(search, case=False, na=False)
@@ -94,38 +89,29 @@ class AuditWorkPage:
             ]
  
         sheet_names = sorted(df["Sheet"].unique().tolist())
+
         #Different tabs for displaying various sheets
- 
-        tabs = st.tabs(sheet_names)
- 
+        tabs = st.tabs(sheet_names) 
         role = st.session_state.get("role", "")
- 
         for idx, sheet in enumerate(sheet_names):
- 
             with tabs[idx]:
- 
                 sheet_df = df[df["Sheet"] == sheet]
- 
                 st.dataframe(
                     sheet_df.drop(columns=["Sheet", "Excel_Row"], errors="ignore"),
                     use_container_width=True,
                     hide_index=True
                 )
+
                 #Reporting Manager dashboard only has Edit and Save options
                 #Creating edit and save buttons and to display the editted details
- 
                 if role == "Reporting Manager" and not sheet_df.empty:
- 
                     st.subheader("Edit Audit")
- 
                     selected_id = st.selectbox(
                         "Select Project",
                         sheet_df["Project ID"].tolist(),
                         key=f"project_{sheet}"
                     )
- 
                     selected = sheet_df[sheet_df["Project ID"] == selected_id].iloc[0]
- 
                     new_status = st.text_input(
                         "Project Status",
                         selected["Project Status"],

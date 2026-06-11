@@ -3,7 +3,6 @@ import pandas as pd
 from styles import load_css
 import plotly.express as px
  
- 
 def show_dashboard():
  
     load_css()
@@ -26,22 +25,15 @@ def show_dashboard():
     reporting_manager = "Not Assigned"
  
     try:
- 
         emp_df = pd.read_excel("employeefinalu.xlsx")
         emp_df.columns=emp_df.columns.str.strip()
-       
- 
         user_row = emp_df[
             emp_df["username"].astype(str).str.lower()
             == username.lower()
-        ]
- 
-        if not user_row.empty:
- 
-            employee_name = user_row.iloc[0]["name"]
- 
-            
- 
+        ] 
+        if not user_row.empty: 
+            employee_name = user_row.iloc[0]["name"] 
+             
     except Exception as e:
         st.error(f"Unable to load employee details: {e}")
  
@@ -79,17 +71,11 @@ def show_dashboard():
         hole=0.4
     )
     st.plotly_chart(fig,use_container_width=True)
-
     st.divider()
- 
-    st.subheader("Quick Summary")
- 
+    st.subheader("Quick Summary") 
     st.info(
         f"""
         Employee : {employee_name}
- 
-   
- 
         Role : {role}
         """
     )

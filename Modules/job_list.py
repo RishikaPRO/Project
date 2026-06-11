@@ -7,7 +7,7 @@ from styles import load_css
 class JobListPage:
     FILE = "AD_Weekly_Load_Tracking_2026-27.xlsx"
 
-    #Auto header detection from AD_Weekly_Load_Tracking_2026-27.xlsx
+    #Auto header detection from excel file
     def detect_header_row(self, df):
         """
         Finds row containing 'Project ID' or similar keyword
@@ -16,7 +16,8 @@ class JobListPage:
             row = df.iloc[i].astype(str).str.lower()
             if row.str.contains("project id").any():
                 return i
-        return 0  # fallback
+        return 0  
+    
     #load data from excel file
     def load_data(self):
         xl = pd.ExcelFile(self.FILE)
@@ -45,7 +46,7 @@ class JobListPage:
             #Remove empty rows
             df = df.dropna(how="all")
             
-            #Normalize column access
+            #Normalize excel data
             def col(name):
                 return df[name] if name in df.columns else ""
             for _, r in df.iterrows():
@@ -72,7 +73,6 @@ class JobListPage:
     def save_update(self, df):
             df.to_excel(self.FILE, index=False)
 
-    # Colour 
     def color(self, pid):
         random.seed(str(pid))
         return "#{:06x}".format(random.randint(0, 0xFFFFFF))
@@ -98,46 +98,48 @@ class JobListPage:
             return
         df = df.fillna("")
 
-        # Tabular display of the job details from the AD_Weekly_Load_Tracking_2026-27.xlsx
+        # Tabular display of the job details from the excel file
         st.subheader("Project Table")
         st.dataframe(df, use_container_width=True)
         st.divider()
         
-        #Edit individual columns in the web page
-        st.subheader("Edit Project")
-        project_ids = df["Project ID"].dropna().unique().tolist()
-        if not project_ids:
-            st.warning("No Project IDs found")
-            return
-        selected_id = st.selectbox("Select Project ID", project_ids)
-        filtered = df[df["Project ID"] == selected_id]
-        if filtered.empty:
-            st.error("Project not found")
-            return
-        selected_row = filtered.iloc[0]
-        with st.form("edit_form"):
-            new_name = st.text_input("Project Name", selected_row["Project Name"])
-            new_type = st.text_input("Project Type", selected_row["Project Type"])
-            new_team = st.text_input("Team Members", selected_row["Team Members"])
-            new_status = st.text_input("Job Status", selected_row["Job Status"])
-            new_start = st.text_input("Start Date", selected_row["Start Date"])
-            new_end = st.text_input("Release Date", selected_row["Release Date"])
-            save = st.form_submit_button("Save Changes")
-        if save:
-            df.loc[df["Project ID"] == selected_id, "Project Name"] = new_name
-            df.loc[df["Project ID"] == selected_id, "Project Type"] = new_type
-            df.loc[df["Project ID"] == selected_id, "Team Members"] = new_team
-            df.loc[df["Project ID"] == selected_id, "Job Status"] = new_status
-            df.loc[df["Project ID"] == selected_id, "Start Date"] = new_start
-            df.loc[df["Project ID"] == selected_id, "Release Date"] = new_end
-            self.save_update(df)
-            st.success("Updated successfully")
-            st.rerun()
-        if st.button("Delete Record", key=f"btn_delete_{selected_id}"):
-            df = df[df["Project ID"] != selected_id]
-            self.save_update(df)
-            st.success("Record deleted")
-            st.rerun()
+        role=st.session_state.get("role", "")
+        if role=="Reporting Manager":
+            #Edit table data
+            st.subheader("Edit Project")
+            project_ids = df["Project ID"].dropna().unique().tolist()
+            if not project_ids:
+                st.warning("No Project IDs found")
+                return
+            selected_id = st.selectbox("Select Project ID", project_ids)
+            filtered = df[df["Project ID"] == selected_id]
+            if filtered.empty:
+                st.error("Project not found")
+                return
+            selected_row = filtered.iloc[0]
+            with st.form("edit_form"):
+                new_name = st.text_input("Project Name", selected_row["Project Name"])
+                new_type = st.text_input("Project Type", selected_row["Project Type"])
+                new_team = st.text_input("Team Members", selected_row["Team Members"])
+                new_status = st.text_input("Job Status", selected_row["Job Status"])
+                new_start = st.text_input("Start Date", selected_row["Start Date"])
+                new_end = st.text_input("Release Date", selected_row["Release Date"])
+                save = st.form_submit_button("Save Changes")
+            if save:
+                df.loc[df["Project ID"] == selected_id, "Project Name"] = new_name
+                df.loc[df["Project ID"] == selected_id, "Project Type"] = new_type
+                df.loc[df["Project ID"] == selected_id, "Team Members"] = new_team
+                df.loc[df["Project ID"] == selected_id, "Job Status"] = new_status
+                df.loc[df["Project ID"] == selected_id, "Start Date"] = new_start
+                df.loc[df["Project ID"] == selected_id, "Release Date"] = new_end
+                self.save_update(df)
+                st.success("Updated successfully")
+                st.rerun()
+            if st.button("Delete Record", key=f"btn_delete_{selected_id}"):
+                df = df[df["Project ID"] != selected_id]
+                self.save_update(df)
+                st.success("Record deleted")
+                st.rerun()
         
         # Calender view of the job timeline
         st.divider()

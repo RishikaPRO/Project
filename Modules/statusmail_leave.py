@@ -11,14 +11,11 @@ class LeaveStatusPage:
     def load_data(self):
         try:
             df = pd.read_excel(self.LEAVE_FILE, sheet_name="Leave Tracker", header=None)
-            
             records = []
  
             # Employee rows start around row 8 in your file
             for row in range(1,len(df)-1):
- 
-                emp_name = df.iloc[row, 0]
- 
+                emp_name = df.iloc[row, 0] 
                 if pd.isna(emp_name):
                     continue
  
@@ -44,7 +41,6 @@ class LeaveStatusPage:
                     "Leave This Year": leave_this_year,
                     "Leave Remaining": leave_remaining
                 })
- 
             return pd.DataFrame(records)
  
         except Exception as e:
@@ -52,7 +48,6 @@ class LeaveStatusPage:
  
  
     def show(self):
- 
         load_css()
         st.markdown("""
         <div style='
@@ -65,8 +60,6 @@ class LeaveStatusPage:
     <h2 style='margin:0;'>Leave Status Dashboard</h2>
         </div>
                     """, unsafe_allow_html=True)
-
- 
         try:
             df = self.load_data()
  
@@ -75,16 +68,12 @@ class LeaveStatusPage:
             return
  
         c1, c2, c3, c4 = st.columns(4)
- 
         c1.metric("Employees", len(df))
         c2.metric("Total Leave This Month", round(df["Leave This Month"].sum(), 1))
         c3.metric("Total Leave This Year", round(df["Leave This Year"].sum(), 1))
         c4.metric("Annual Leave Policy", "24")
- 
         st.divider()
- 
         search = st.text_input("Search Employee")
- 
         if search:
             df = df[
                 df["Employee Name"].str.contains(
@@ -93,13 +82,11 @@ class LeaveStatusPage:
                     na=False
                 )
             ]
- 
         st.dataframe(
             df,
             use_container_width=True,
             hide_index=True
         )
- 
  
 def show_statusmail():
     LeaveStatusPage().show()
