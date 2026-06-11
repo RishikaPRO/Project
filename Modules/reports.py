@@ -3,14 +3,12 @@ import streamlit as st
 import pandas as pd
 import plotly.express as px
 import io
+import tempfile
 from reportlab.platypus import SimpleDocTemplate, Table, TableStyle, Paragraph, Spacer, Image as RLImage, PageBreak
 from reportlab.lib import colors
 from reportlab.lib.styles import getSampleStyleSheet
-#from reportlab.lib.utils import ImageReader
 from styles import load_css
-#from openpyxl.drawing.image import Image as XLImage
 import kaleido
-#from tempfile import NamedTemporaryFile
 
 class ReportsDashboard:
     def __init__(self, file_path):
@@ -43,7 +41,7 @@ class ReportsDashboard:
                 return c
         return None
    
-    #Excel data normalization to avoid data data redundancy 
+    #Excel data normalization 
     def normalize_employees(self):
         def clean(x):
             if pd.isna(x):
@@ -58,11 +56,11 @@ class ReportsDashboard:
     
     #Exoprt report data in excel format
     def to_excel(self, df):
-        buffer = io.BytesIO()
-        with pd.ExcelWriter(buffer, engine="openpyxl") as writer:
+        tmp = tempfile.NamedTemporaryFile(suffix=".xlsx", delete=False)
+        tmp.close()
+        with pd.ExcelWriter(tmp.name, engine="openpyxl") as writer:
             df.to_excel(writer, sheet_name="Report", index=False)
-        buffer.seek(0)
-        return buffer
+        return tmp.name
 
     #Export report data in pdf format 
     def to_pdf(self, df, title):
@@ -71,8 +69,9 @@ class ReportsDashboard:
             img_bytes.write(fig.to_image(format="png", width=700, height=400))
             img_bytes.seek(0)
             return img_bytes
-        buffer = io.BytesIO()
-        doc = SimpleDocTemplate(buffer, rightMargin=20, leftMargin=20, topMargin=20, bottomMargin=20)
+        tmp = tempfile.NamedTemporaryFile(suffix=".pdf", delete=False)
+        tmp.close()
+        doc = SimpleDocTemplate(tmp.name, rightMargin=20, leftMargin=20, topMargin=20, bottomMargin=20)
         styles = getSampleStyleSheet()
         elements = []
     
@@ -87,8 +86,8 @@ class ReportsDashboard:
             status_counts = (df[self.status_col].fillna("Unknown"))
            
             if len(status_counts) > 0:
-                status_colors=["#0c2e46", "#0c4c25", "#6e2ca0", "#d62728", "#9467bd"]
-                fig = px.pie(df, names=self.status_col, title="Status Breakdown")
+                status_colors=["#0c2e46", "#0c4c25", "#6e2ca0", "#7b7947", "#55222d"]
+                fig = px.pie(df, names=self.status_col, title="Status Breakdown",color=self.status_col, color_discrete_sequence=status_colors)
         
                 elements.append(Paragraph("Status Breakdown", styles["Heading2"]))
                 elements.append(Spacer(1, 5))
@@ -125,8 +124,7 @@ class ReportsDashboard:
            ("ROWBACKGROUNDS", (0, 1), (-1, -1), [colors.whitesmoke, colors.lightgrey]),]))
         elements.append(table)
         doc.build(elements)
-        buffer.seek(0)
-        return buffer
+        return tmp.name
         
         #Dashboard page UI 
     def show_reports(self):
@@ -174,11 +172,11 @@ class ReportsDashboard:
             """, unsafe_allow_html=True)
             with st.expander(f"Open Report - {emp}"):
                 st.markdown("#### Employee Details")
-                # Large table height
                 table_height = min(
                     max(400, len(emp_df) * 35), 1200)
                 st.dataframe( emp_df, use_container_width=True, height=table_height)
                 if self.status_col:
+                    #status representation in pie chart
                     st.markdown("#### Status Breakdown")
                     fig = px.pie(
                         emp_df,
@@ -196,6 +194,7 @@ class ReportsDashboard:
                         temp[self.date_col],
                         errors="coerce"
                     )
+                    #timeline representation in bar graph 
                     st.markdown("#### Timeline")
                     fig2 = px.histogram(temp, x=self.date_col, nbins=20)
                     st.plotly_chart(
@@ -206,17 +205,19 @@ class ReportsDashboard:
                 st.divider()
                 col1, col2 = st.columns(2)
                 with col1:
+                    #download button->excel sheet
                     st.download_button(
                         "Excel Report",
-                        data=self.to_excel(emp_df),
+                        data=open(self.to_excel(emp_df),'rb'),
                         file_name=f"{emp}.xlsx",
                         mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
                         use_container_width=True
                     )
                 with col2:
+                    #Download button->pdf
                     st.download_button(
                         " PDF Report",
-                        data=self.to_pdf(emp_df, emp),
+                        data=open(self.to_pdf(emp_df, emp),'rb'),
                         file_name=f"{emp}.pdf",
                         mime="application/pdf",
                         use_container_width=True

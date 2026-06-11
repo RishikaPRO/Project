@@ -21,6 +21,7 @@ class LoginPage:
                 <div style="color:#6e7681; font-size:0.85rem; margin-top:0.25rem;">
                 Project Management & Audit System
                 </div>
+<<<<<<< HEAD
                 </div>
                 """,
                 unsafe_allow_html=True,
@@ -34,6 +35,17 @@ class LoginPage:
  
             st.markdown("<br>", unsafe_allow_html=True)
             #username and password input
+=======
+            </div>
+            """,
+            unsafe_allow_html=True,
+        ) 
+        role_choice = st.radio(
+            "Login as",
+            ["Reporting Manager", "Team Member"],
+            horizontal=True,
+        )
+>>>>>>> b7f309dcc13965b6e372e5fec1ce780da0c6cdc8
  
             username = st.text_input(
                 "Username",

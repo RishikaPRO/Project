@@ -3,9 +3,13 @@ import pandas as pd
 from styles import load_css
 import plotly.express as px
  
+<<<<<<< HEAD
  
 class DashboardPage:
     #Load dashboard and get username and role
+=======
+def show_dashboard():
+>>>>>>> b7f309dcc13965b6e372e5fec1ce780da0c6cdc8
  
     load_css()
     st.markdown("""
@@ -29,6 +33,7 @@ class DashboardPage:
  
     try:
         emp_df = pd.read_excel("employeefinalu.xlsx")
+<<<<<<< HEAD
         emp_df.columns = emp_df.columns.str.strip()
  
         user_row = emp_df[
@@ -38,6 +43,16 @@ class DashboardPage:
  
         if not user_row.empty:
             employee_name = user_row.iloc[0]["name"]
+=======
+        emp_df.columns=emp_df.columns.str.strip()
+        user_row = emp_df[
+            emp_df["username"].astype(str).str.lower()
+            == username.lower()
+        ] 
+        if not user_row.empty: 
+            employee_name = user_row.iloc[0]["name"] 
+             
+>>>>>>> b7f309dcc13965b6e372e5fec1ce780da0c6cdc8
     except Exception as e:
         st.error(f"Unable to load employee details: {e}")
         #css script for styling
@@ -80,17 +95,12 @@ class DashboardPage:
         title="Task Status Distribution",
         hole=0.4
     )
- 
-    st.plotly_chart(fig, use_container_width=True)
- 
+    st.plotly_chart(fig,use_container_width=True)
     st.divider()
- 
-    st.subheader("Quick Summary")
- 
+    st.subheader("Quick Summary") 
     st.info(
         f"""
         Employee : {employee_name}
- 
         Role : {role}
         """
     )
