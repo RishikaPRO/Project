@@ -6,7 +6,8 @@ from styles import load_css
 
 class JobListPage:
     FILE = "AD_Weekly_Load_Tracking_2026-27.xlsx"
-   # ---------------- AUTO HEADER DETECTION ----------------
+
+    #Auto header detection from AD_Weekly_Load_Tracking_2026-27.xlsx
     def detect_header_row(self, df):
         """
         Finds row containing 'Project ID' or similar keyword
@@ -16,14 +17,15 @@ class JobListPage:
             if row.str.contains("project id").any():
                 return i
         return 0  # fallback
-   # ---------------- LOAD ----------------
+    #load data from excel file
     def load_data(self):
         xl = pd.ExcelFile(self.FILE)
         all_data = []
         for sheet in xl.sheet_names:
             raw = pd.read_excel(self.FILE, sheet_name=sheet, header=None)
             raw = raw.dropna(how="all")
-            # -------- FIND HEADER ROW --------
+            
+            #Find the header row
             header_row = None
             for i in range(min(20, len(raw))):
                 row = raw.iloc[i].astype(str).str.lower()
@@ -32,16 +34,18 @@ class JobListPage:
                     break
                 if header_row is None:
                     continue
-        # -------- READ PROPER TABLE --------
+
+            #Read table data
             df = pd.read_excel(
                self.FILE,
                sheet_name=sheet,
                header=header_row
             )
             df.columns = df.columns.astype(str).str.strip()
-            # -------- CLEAN EMPTY ROWS --------
+            #Remove empty rows
             df = df.dropna(how="all")
-        # -------- NORMALIZE COLUMN ACCESS --------
+            
+            #Normalize column access
             def col(name):
                 return df[name] if name in df.columns else ""
             for _, r in df.iterrows():
@@ -53,37 +57,53 @@ class JobListPage:
                     continue
                 all_data.append({
                     "Project ID": pid,
-                   "Project Name": r.get("Project Name", ""),
-                   "Project Type": r.get("Project Type", ""),
-                   "Project Team": r.get("Project Team", ""),
-                   "Team Members": r.get("Team Members", ""),
-                   "Language": r.get("Language", ""),
-                   "Job Status": r.get("Job Status", ""),
-                   "Start Date": r.get("Start Date", ""),
-                  "Release Date": r.get("Release Date", "")
+                    "Project Name": r.get("Project Name", ""),
+                    "Project Type": r.get("Project Type", ""),
+                    "Project Team": r.get("Project Team", ""),
+                    "Team Members": r.get("Team Members", ""),
+                    "Language": r.get("Language", ""),
+                    "Job Status": r.get("Job Status", ""),
+                    "Start Date": r.get("Start Date", ""),
+                    "Release Date": r.get("Release Date", "")
                 })
         return pd.DataFrame(all_data)
-         # ---------------- SAVE ----------------
+    
+    # Save data
     def save_update(self, df):
             df.to_excel(self.FILE, index=False)
-    # ---------------- COLOR ----------------
+
+    # Colour 
     def color(self, pid):
         random.seed(str(pid))
         return "#{:06x}".format(random.randint(0, 0xFFFFFF))
-    # ---------------- UI ----------------
+    
+    # job_list dashboard ui
     def show(self):
         load_css()
-        st.title("Job List Dashboard")
+        st.markdown("""
+        <div style='
+        padding:20px;
+            border-radius:12px;
+            background:linear-gradient(90deg,#0f172a,#1e293b);
+            color:white;
+            margin-bottom:20px;
+        '>
+    <h2 style='margin:0;'>Job List Dashboard </h2>
+        </div>
+                    """, unsafe_allow_html=True)
+        
         df = self.load_data()
         if df.empty:
             st.error("No usable data found")
             return
- 
-        # ---------------- EDIT BUTTON (BOTTOM) ----------------
+        df = df.fillna("")
+
+        # Tabular display of the job details from the AD_Weekly_Load_Tracking_2026-27.xlsx
         st.subheader("Project Table")
         st.dataframe(df, use_container_width=True)
         st.divider()
-        # ---------------- EDIT ----------------
+        
+        #Edit individual columns in the web page
         st.subheader("Edit Project")
         project_ids = df["Project ID"].dropna().unique().tolist()
         if not project_ids:
@@ -118,7 +138,8 @@ class JobListPage:
             self.save_update(df)
             st.success("Record deleted")
             st.rerun()
-        # ---------------- CALENDAR ----------------
+        
+        # Calender view of the job timeline
         st.divider()
         st.subheader("Timeline")
         events = []

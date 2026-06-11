@@ -54,8 +54,18 @@ class LeaveStatusPage:
     def show(self):
  
         load_css()
- 
-        st.title("Leave Status Dashboard")
+        st.markdown("""
+        <div style='
+        padding:20px;
+            border-radius:12px;
+            background:linear-gradient(90deg,#0f172a,#1e293b);
+            color:white;
+            margin-bottom:20px;
+        '>
+    <h2 style='margin:0;'>Leave Status Dashboard</h2>
+        </div>
+                    """, unsafe_allow_html=True)
+
  
         try:
             df = self.load_data()

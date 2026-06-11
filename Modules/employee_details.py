@@ -7,9 +7,18 @@ class EmployeeDetailsPage:
     #load method to read excel and show details
     def show(self):
         load_css()
+        st.markdown("""
+        <div style='
+        padding:20px;
+            border-radius:12px;
+            background:linear-gradient(90deg,#0f172a,#1e293b);
+            color:white;
+            margin-bottom:20px;
+        '>
+    <h2 style='margin:0;'>Employee Details</h2>
+        </div>
+                    """, unsafe_allow_html=True)
     
- 
-        st.title("Employee Details")
         #css script for styling
         st.markdown("""
 <style>
@@ -87,6 +96,11 @@ div[data-testid="stDataFrame"] { border: 1px solid #DDE2E7; border-radius: 10px;
                 st.table(info_df)
         else:
             st.warning(f"No details found for username: {username}")
+
+        role=st.session_state.get("role","").strip().lower()
+        if role=="Team Member":
+            return
+        
  
         st.markdown("---")
         st.subheader("Employee Directory")
@@ -125,6 +139,7 @@ div[data-testid="stDataFrame"] { border: 1px solid #DDE2E7; border-radius: 10px;
         st.dataframe(display_df, use_container_width=True, hide_index=True)
         
         #option to edit employee details for reporting manager role
+       
  
         if role == "Reporting Manager":
             st.markdown("---")
