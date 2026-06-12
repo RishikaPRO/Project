@@ -9,9 +9,7 @@ class JobListPage:
 
     #Auto header detection from excel file
     def detect_header_row(self, df):
-        """
-        Finds row containing 'Project ID' or similar keyword
-        """
+        #Find Project_ID 
         for i in range(min(30, len(df))):
             row = df.iloc[i].astype(str).str.lower()
             if row.str.contains("project id").any():
@@ -100,9 +98,9 @@ class JobListPage:
         df = df.fillna("")
 
         role = st.session_state.get("role", "")
-        username = st.session_state.get("username", "").strip()
+        username = st.session_state.get("Username", "").strip()
         
-        #
+        #Team member view
         if role == "Team Member":
             member_df = df[df["Team Members"].astype(str).str.contains(username, case=False, na=False)]
             st.subheader("My Projects")
@@ -139,6 +137,30 @@ class JobListPage:
            """,
                     unsafe_allow_html=True
                 )
+
+            st.divider()
+            st.subheader("My Timeline")
+            events = []
+            for _, r in member_df.iterrows():
+                start = pd.to_datetime(r["Start Date"], errors="coerce")
+                end = pd.to_datetime(r["Release Date"], errors="coerce")
+                if pd.isna(start):
+                    continue
+                if pd.isna(end):
+                    end = start
+                events.append({
+                    "title": f"{r['Project ID']} - {r['Project Name']}",
+                    "start": start.strftime("%Y-%m-%d"),
+                    "end": end.strftime("%Y-%m-%d"),
+                    "color": self.color(r["Project ID"])
+                })
+            calendar(events=events,
+                options={
+                    "initialView": "dayGridMonth",
+                    "headerToolbar": {"left": "prev,next today", "center": "title", "right": "dayGridMonth,timeGridWeek"},
+                    "height": 700
+                },
+                key="member_calendar")
         
         #reporting manager view
         else:
@@ -147,73 +169,31 @@ class JobListPage:
             st.divider()
             st.subheader("Edit Project")
             project_ids = df["Project ID"].dropna().unique().tolist()
-            selected_id = st.selectbox(
-                "Select Project ID",
-                project_ids
-            )
+            selected_id = st.selectbox("Select Project ID",project_ids)
             filtered = df[df["Project ID"] == selected_id]
             if not filtered.empty:
                 selected_row = filtered.iloc[0]
                 with st.form("edit_form"):
-                    new_name = st.text_input(
-                        "Project Name",
-                        selected_row["Project Name"]
-                    )
-                    new_type = st.text_input(
-                        "Project Type",
-                        selected_row["Project Type"]
-                    )
-                    new_team = st.text_input(
-                        "Team Members",
-                        selected_row["Team Members"]
-                    )
-                    new_status = st.text_input(
-                        "Job Status",
-                        selected_row["Job Status"]
-                    )
-                    new_start = st.text_input(
-                        "Start Date",
-                        selected_row["Start Date"]
-                    )
-                    new_end = st.text_input(
-                        "Release Date",
-                        selected_row["Release Date"]
-                    )
-                    save = st.form_submit_button(
-                        "Save Changes"
-                    )
+                    new_name = st.text_input("Project Name", selected_row["Project Name"])
+                    new_type = st.text_input("Project Type", selected_row["Project Type"])
+                    new_team = st.text_input("Team Members", selected_row["Team Members"])
+                    new_status = st.text_input("Job Status", selected_row["Job Status"])
+                    new_start = st.text_input("Start Date", selected_row["Start Date"])
+                    new_end = st.text_input("Release Date", selected_row["Release Date"])
+                    save = st.form_submit_button("Save Changes")
+               
+                #Edited data updation          
                 if save:
-                    df.loc[
-                        df["Project ID"] == selected_id,
-                        "Project Name"
-                    ] = new_name
-                    df.loc[
-                        df["Project ID"] == selected_id,
-                        "Project Type"
-                    ] = new_type
-                    df.loc[
-                        df["Project ID"] == selected_id,
-                        "Team Members"
-                    ] = new_team
-                    df.loc[
-                        df["Project ID"] == selected_id,
-                        "Job Status"
-                    ] = new_status
-                    df.loc[
-                        df["Project ID"] == selected_id,
-                        "Start Date"
-                    ] = new_start
-                    df.loc[
-                        df["Project ID"] == selected_id,
-                        "Release Date"
-                    ] = new_end
+                    df.loc[df["Project ID"] == selected_id, "Project Name"] = new_name
+                    df.loc[df["Project ID"] == selected_id,"Project Type"] = new_type
+                    df.loc[df["Project ID"] == selected_id,"Team Members"] = new_team
+                    df.loc[df["Project ID"] == selected_id,"Job Status"] = new_status
+                    df.loc[df["Project ID"] == selected_id,"Start Date"] = new_start
+                    df.loc[ df["Project ID"] == selected_id, "Release Date"] = new_end
                     self.save_update(df)
                     st.success("Updated Successfully")
                     st.rerun()
-                if st.button(
-                    "Delete Record",
-                    key=f"delete_{selected_id}"
-                ):
+                if st.button("Delete Record", key=f"delete_{selected_id}"):
                     df = df[df["Project ID"] != selected_id]
                     self.save_update(df)
                     st.success("Record Deleted")
@@ -253,5 +233,3 @@ class JobListPage:
 def show_job_list():
     JobListPage().show()
  
- 
-
