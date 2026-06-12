@@ -5,7 +5,7 @@ import random
 from styles import load_css
 
 class JobListPage:
-    FILE = "AD_Weekly_Load_Tracking_2026-27.xlsx"
+    FILE = "Job_list.xlsx"
 
     #Auto header detection from excel file
     def detect_header_row(self, df):
