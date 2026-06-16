@@ -153,75 +153,110 @@ class ReportsDashboard:
             st.plotly_chart(fig, use_container_width=True, key="overall_status_histogram")
 
         #Individual team members data display    
-        st.markdown("###  Team Members")
-        for emp in self.employees:
-            emp_df = self.df[self.df[self.name_col] == emp]
+        st.markdown("### Team Members")
+        role = st.session_state.get("role", "")
+        username = st.session_state.get("Username", "").strip()
+        if role == "Team Member":
+            employees_to_show = [username]
+        else:
+            employees_to_show = self.employees
+        for emp in employees_to_show:
+            if role == "Team Member":
+                emp_df = self.df[
+                    self.df[self.name_col]
+                    .astype(str)
+                    .str.contains(emp, case=False, na=False)
+                ]
+            else:
+                emp_df = self.df[self.df[self.name_col] == emp]
+            if emp_df.empty:
+                continue
             st.markdown(f"""
-    <div style="
-                background:white;
-                border-radius:16px;
-                padding:18px;
-                margin-bottom:8px;
-                box-shadow:0 2px 12px rgba(0,0,0,0.08);
-            ">
-    <h3 style="margin-bottom:5px;">{emp}</h3>
-    <p style="color:gray;margin:0;">
-               {len(emp_df)} Records
-               </p>
-    </div>
-            """, unsafe_allow_html=True)
-            with st.expander(f"Open Report - {emp}"):
+                        <div style=" 
+                        background:white;
+                        border-radius:16px;
+                        padding:18px;
+                        margin-bottom:8px;
+                        box-shadow:0 2px 12px rgba(0,0,0,0.08);">
+                        <h3 style="margin-bottom:5px;">{emp}</h3>
+                        <p style="color:gray;margin:0;"> {len(emp_df)} Records
+                        </p></div>""", unsafe_allow_html=True)
+            
+            #Display of the logged in member s details
+            if role == "Team Member":
                 st.markdown("#### Employee Details")
-                table_height = min(
-                    max(400, len(emp_df) * 35), 1200)
-                st.dataframe( emp_df, use_container_width=True, height=table_height)
+                table_height = min(max(400, len(emp_df) * 35), 1200)
+                st.dataframe(emp_df, use_container_width=True, height=table_height)
                 if self.status_col:
-                    #status representation in pie chart
                     st.markdown("#### Status Breakdown")
-                    fig = px.pie(
-                        emp_df,
-                        names=self.status_col,
-                        hole=0.45
-                    )
-                    st.plotly_chart(
-                        fig,
-                        use_container_width=True,
-                        key=f"status_pie_{emp}"
-                    )
+                    fig = px.pie(emp_df, names=self.status_col, hole=0.45)
+                    st.plotly_chart(fig, use_container_width=True)
                 if self.date_col:
                     temp = emp_df.copy()
                     temp[self.date_col] = pd.to_datetime(
                         temp[self.date_col],
                         errors="coerce"
                     )
-                    #timeline representation in bar graph 
                     st.markdown("#### Timeline")
                     fig2 = px.histogram(temp, x=self.date_col, nbins=20)
-                    st.plotly_chart(
-                        fig2,
+                    st.plotly_chart(fig2, use_container_width=True)
+            else:
+                #cumulative display of employee details for reporting manager
+                with st.expander(f"Open Report - {emp}"):
+                    st.markdown("#### Employee Details")
+                    table_height = min(max(400, len(emp_df) * 35), 1200)
+                    st.dataframe(
+                        emp_df,
                         use_container_width=True,
-                        key=f"timeline_histogram_{emp}"
+                        height=table_height
                     )
-                st.divider()
-                col1, col2 = st.columns(2)
-                with col1:
-                    #download button->excel sheet
-                    st.download_button(
-                        "Excel Report",
-                        data=open(self.to_excel(emp_df),'rb'),
-                        file_name=f"{emp}.xlsx",
-                        mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-                        use_container_width=True
-                    )
-                with col2:
-                    #Download button->pdf
-                    st.download_button(
-                        " PDF Report",
-                        data=open(self.to_pdf(emp_df, emp),'rb'),
-                        file_name=f"{emp}.pdf",
-                        mime="application/pdf",
-                        use_container_width=True
-                    )
+                    if self.status_col:
+                        st.markdown("#### Status Breakdown")
+                        fig = px.pie(
+                            emp_df,
+                            names=self.status_col,
+                            hole=0.45
+                        )
+                        st.plotly_chart(
+                            fig,
+                            use_container_width=True,
+                            key=f"status_pie_{emp}"
+                        )
+                    if self.date_col:
+                        temp = emp_df.copy()
+                        temp[self.date_col] = pd.to_datetime(
+                            temp[self.date_col],
+                            errors="coerce"
+                        )
+                        st.markdown("#### Timeline")
+                        fig2 = px.histogram(
+                            temp,
+                            x=self.date_col,
+                            nbins=20
+                        )
+                        st.plotly_chart(
+                            fig2,
+                            use_container_width=True,
+                            key=f"timeline_histogram_{emp}"
+                        )
+                    st.divider()
+                    col1, col2 = st.columns(2)
+                    with col1:
+                        st.download_button(
+                            "Excel Report",
+                            data=open(self.to_excel(emp_df), "rb"),
+                            file_name=f"{emp}.xlsx",
+                            mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+                            use_container_width=True
+                        )
+                    with col2:
+                        st.download_button(
+                            "PDF Report",
+                            data=open(self.to_pdf(emp_df, emp), "rb"),
+                            file_name=f"{emp}.pdf",
+                            mime="application/pdf",
+                            use_container_width=True
+                        )
             st.markdown("<br>", unsafe_allow_html=True)
 
 #Function call
