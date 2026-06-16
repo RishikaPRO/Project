@@ -38,6 +38,7 @@ class EmployeeDashboard:
     def get_total_leave_year(self):
         if "Leaves This Month.1" in self.leave_df.columns:
             return self.leave_df["Leaves This Month.1"].sum()
+            
         return 0
 
     def get_employee_leave(self, employee_name):
