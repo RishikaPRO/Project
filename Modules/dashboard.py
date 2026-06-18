@@ -7,12 +7,14 @@ from styles import load_css
 
 class EmployeeDashboard:
     def __init__(self):
+        #load excel data
         self.file_path = "dashboard.xlsx"
         self.employee_df = pd.DataFrame()
         self.leave_df = pd.DataFrame()
         self.projects_df = pd.DataFrame()
 
         self.load_data()
+    
 
     def load_data(self):
         try:
@@ -29,18 +31,18 @@ class EmployeeDashboard:
         except Exception as e:
             st.error(f"Error loading data: {e}")
             st.stop()
-
+    #Retrive total leave per month from excel file
     def get_total_leave_month(self):
         if "Leaves This Month" in self.leave_df.columns:
             return self.leave_df["Leaves This Month"].sum()
         return 0
-
+    #Retrive total leave in a year from excel file
     def get_total_leave_year(self):
         if "Leaves This Month.1" in self.leave_df.columns:
             return self.leave_df["Leaves This Month.1"].sum()
             
         return 0
-
+    #retreiving leave data from excel file
     def get_employee_leave(self, employee_name):
         try:
             leave_row = self.leave_df[self.leave_df["Name"].astype(str).str.strip().str.lower()== employee_name.strip().lower()]
@@ -63,11 +65,13 @@ class EmployeeDashboard:
                 "year": 0,
                 "remaining": 0
             }
+    #retreiving project data from excel file
     def get_employee_projects(self, employee_name):
         try:
             return self.projects_df[self.projects_df["Team Members"].astype(str).str.contains(employee_name, case=False, na=False)]
         except Exception:
             return pd.DataFrame()
+    #display metrics in dashboard
     def create_metrics(self):
         total_employees = len(self.employee_df)
         total_projects = len(self.projects_df)
@@ -83,6 +87,9 @@ class EmployeeDashboard:
         with col4:
             st.metric("Leave This Year",round(total_leave_year, 1))
 
+     
+    #display charts from retrieved data through plotly
+
     def create_charts(self):
 
         st.subheader("Analytics")
@@ -93,25 +100,71 @@ class EmployeeDashboard:
         with c2:
             project_fig = px.pie(self.projects_df,names="Job Status",title="Project Status Distribution")
             st.plotly_chart(project_fig,use_container_width=True)
-
+    
     def employee_directory(self):
+        role = st.session_state.get("role", "").strip().lower()
+        username = st.session_state.get("Username", "").strip().lower()
+
+        #To view individual team member details
+        if role == "team member":
+
+            my_employee = self.employee_df[
+                self.employee_df["Username"]
+                .astype(str)
+                .str.strip()
+                .str.lower() == username
+            ]
+
+            if my_employee.empty:
+                st.warning("Employee details not found.")
+                return
+
+            st.subheader("My Details")
+
+            employee = my_employee.iloc[0]
+            self.show_employee_details(employee)
+
+            return
+
+        # Reporting Manager Dashboard
         st.subheader("Employee Directory")
+
         col1, col2 = st.columns(2)
+
         with col1:
             search = st.text_input("Search Employee")
+
         with col2:
-            departments = ["All"] + sorted(self.employee_df["Department"] .astype(str).unique().tolist())
-            department_filter = st.selectbox("Department",departments)
+            departments = ["All"] + sorted(
+                self.employee_df["Department"]
+                .astype(str)
+                .unique()
+                .tolist()
+            )
+            department_filter = st.selectbox("Department", departments)
+
         filtered_df = self.employee_df.copy()
+
         if search:
-            filtered_df = filtered_df[filtered_df["Name"].astype(str).str.contains(search, case=False, na=False)]
+            filtered_df = filtered_df[
+                filtered_df["Name"]
+                .astype(str)
+                .str.contains(search, case=False, na=False)
+            ]
+
         if department_filter != "All":
-            filtered_df = filtered_df[filtered_df["Department"]== department_filter]
+            filtered_df = filtered_df[
+                filtered_df["Department"] == department_filter
+            ]
+
         directory_data = []
+        #display directory data from excel file
+
         for _, row in filtered_df.iterrows():
             emp_name = row["Name"]
             leave_info = self.get_employee_leave(emp_name)
             projects = self.get_employee_projects(emp_name)
+
             directory_data.append({
                 "Employee Name": emp_name,
                 "Department": row["Department"],
@@ -119,10 +172,18 @@ class EmployeeDashboard:
                 "Projects Assigned": len(projects),
                 "Leave This Month": leave_info["month"]
             })
-        st.dataframe(pd.DataFrame(directory_data),use_container_width=True,hide_index=True)
+
+        st.dataframe(
+            pd.DataFrame(directory_data),
+            use_container_width=True,
+            hide_index=True
+        )
+
         st.divider()
+
         for _, employee in filtered_df.iterrows():
             self.show_employee_details(employee)
+ 
     def show_employee_details(self, employee):
         employee_name = employee["Name"]
         leave_info = self.get_employee_leave(employee_name)
@@ -131,13 +192,13 @@ class EmployeeDashboard:
             st.markdown("### Employee Information")
             c1, c2 = st.columns(2)
             with c1:
-                st.write(f"**Employee ID:** {employee['Employe ID']}" )
+                st.write(f"**Employee ID:** {employee['Employe ID']}")
                 st.write(f"**Username:** {employee['Username']}")
                 st.write(f"**Department:** {employee['Department']}")
                 st.write(f"**Role:** {employee['Role']}")
 
             with c2:
-                st.write(f"**DOB:** {employee['DOB']}" )
+                st.write(f"**DOB:** {employee['DOB']}")
                 st.write(f"**Date of Joining:** {employee['Date of Joining']}")
                 st.write(f"**Email:** {employee['Email']}")
                 st.write( f"**Phone Number:** {employee['Phone no']}")
@@ -167,6 +228,7 @@ class EmployeeDashboard:
                         st.write(f"**Start Date:** {project['Start Date']}")
                         st.write(f"**Release Date:** {project['Release Date']}")
                     st.divider()
+    #Calling the employee directory method and team member dashboard information.
     def run(self):
         load_css()
         st.markdown("""
@@ -182,11 +244,17 @@ class EmployeeDashboard:
                     """, unsafe_allow_html=True)
         st.set_page_config(page_title="Employee Dashboard",layout="wide")
         st.container()
-        self.create_metrics()
-        st.divider()
-        self.create_charts()
-        st.divider()
+        role = st.session_state.get("role", "").strip().lower()
+
+        if role != "team member":
+            self.create_metrics()
+            st.divider()
+
+            self.create_charts()
+            st.divider()
+
         self.employee_directory()
+        
 
 def show_dashboard():
     EmployeeDashboard().run()

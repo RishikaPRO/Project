@@ -65,6 +65,7 @@ class ADToolsApp:
             if st.button("Logout", use_container_width=True):
                 for key in list(st.session_state.keys()):
                     del st.session_state[key]
+                    st.success("Logout successfull!")
                 st.rerun()
  
     def load_page(self):

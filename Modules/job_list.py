@@ -5,13 +5,11 @@ import random
 from styles import load_css
 
 class JobListPage:
-    FILE = "Job_list.xlsx"
+    FILE = "dashboard.xlsx"
 
     #Auto header detection from excel file
     def detect_header_row(self, df):
-        """
-        Finds row containing 'Project ID' or similar keyword
-        """
+        #Find Project_ID 
         for i in range(min(30, len(df))):
             row = df.iloc[i].astype(str).str.lower()
             if row.str.contains("project id").any():
@@ -46,6 +44,7 @@ class JobListPage:
             #Remove empty rows
             df = df.dropna(how="all")
             
+            
             #Normalize excel data
             def col(name):
                 return df[name] if name in df.columns else ""
@@ -71,7 +70,7 @@ class JobListPage:
     
     # Save data
     def save_update(self, df):
-            df.to_excel(self.FILE, index=False)
+        df.to_excel(self.FILE, index=False)
 
     def color(self, pid):
         random.seed(str(pid))
@@ -98,82 +97,139 @@ class JobListPage:
             return
         df = df.fillna("")
 
-        # Tabular display of the job details from the excel file
-        st.subheader("Project Table")
-        st.dataframe(df, use_container_width=True)
-        st.divider()
+        role = st.session_state.get("role", "")
+        username = st.session_state.get("Username", "").strip()
         
-        role=st.session_state.get("role", "")
-        if role=="Reporting Manager":
-            #Edit table data
+        #Team member view
+        if role == "Team Member":
+            member_df = df[df["Team Members"].astype(str).str.contains(username, case=False, na=False)]
+            st.subheader("My Projects")
+            if member_df.empty:
+                st.info("No projects assigned to you")
+                return
+            for _, row in member_df.iterrows():
+                status = str(row["Job Status"]).strip().lower()
+                if status == "completed":
+                    border = "#15532b"
+                elif status == "in progress":
+                    border = "#501e14"
+                else:
+                    border = "#1a3054"
+                st.markdown(
+                    f"""
+<div style="
+               background:white;
+               padding:20px;
+               border-radius:12px;
+               margin-bottom:15px;
+               border-left:8px solid {border};
+               box-shadow:0 2px 8px rgba(0,0,0,0.1);
+           ">
+<h3>{row['Project Name']}</h3>
+<p><b>Project ID:</b> {row['Project ID']}</p>
+<p><b>Project Type:</b> {row['Project Type']}</p>
+<p><b>Project Team:</b> {row['Project Team']}</p>
+<p><b>Language:</b> {row['Language']}</p>
+<p><b>Status:</b> {row['Job Status']}</p>
+<p><b>Start Date:</b> {row['Start Date']}</p>
+<p><b>Release Date:</b> {row['Release Date']}</p>
+</div>
+           """,
+                    unsafe_allow_html=True
+                )
+
+            st.divider()
+            st.subheader("My Timeline")
+            events = []
+            for _, r in member_df.iterrows():
+                start = pd.to_datetime(r["Start Date"], errors="coerce")
+                end = pd.to_datetime(r["Release Date"], errors="coerce")
+                if pd.isna(start):
+                    continue
+                if pd.isna(end):
+                    end = start
+                events.append({
+                    "title": f"{r['Project ID']} - {r['Project Name']}",
+                    "start": start.strftime("%Y-%m-%d"),
+                    "end": end.strftime("%Y-%m-%d"),
+                    "color": self.color(r["Project ID"])
+                })
+            calendar(events=events,
+                options={
+                    "initialView": "dayGridMonth",
+                    "headerToolbar": {"left": "prev,next today", "center": "title", "right": "dayGridMonth,timeGridWeek"},
+                    "height": 700
+                },
+                key="member_calendar")
+        
+        #reporting manager view
+        else:
+            st.subheader("Project Table")
+            st.dataframe(df, use_container_width=True)
+            st.divider()
             st.subheader("Edit Project")
             project_ids = df["Project ID"].dropna().unique().tolist()
-            if not project_ids:
-                st.warning("No Project IDs found")
-                return
-            selected_id = st.selectbox("Select Project ID", project_ids)
+            selected_id = st.selectbox("Select Project ID",project_ids)
             filtered = df[df["Project ID"] == selected_id]
-            if filtered.empty:
-                st.error("Project not found")
-                return
-            selected_row = filtered.iloc[0]
-            with st.form("edit_form"):
-                new_name = st.text_input("Project Name", selected_row["Project Name"])
-                new_type = st.text_input("Project Type", selected_row["Project Type"])
-                new_team = st.text_input("Team Members", selected_row["Team Members"])
-                new_status = st.text_input("Job Status", selected_row["Job Status"])
-                new_start = st.text_input("Start Date", selected_row["Start Date"])
-                new_end = st.text_input("Release Date", selected_row["Release Date"])
-                save = st.form_submit_button("Save Changes")
-            if save:
-                df.loc[df["Project ID"] == selected_id, "Project Name"] = new_name
-                df.loc[df["Project ID"] == selected_id, "Project Type"] = new_type
-                df.loc[df["Project ID"] == selected_id, "Team Members"] = new_team
-                df.loc[df["Project ID"] == selected_id, "Job Status"] = new_status
-                df.loc[df["Project ID"] == selected_id, "Start Date"] = new_start
-                df.loc[df["Project ID"] == selected_id, "Release Date"] = new_end
-                self.save_update(df)
-                st.success("Updated successfully")
-                st.rerun()
-            if st.button("Delete Record", key=f"btn_delete_{selected_id}"):
-                df = df[df["Project ID"] != selected_id]
-                self.save_update(df)
-                st.success("Record deleted")
-                st.rerun()
-        
-        # Calender view of the job timeline
-        st.divider()
-        st.subheader("Timeline")
-        events = []
-        for _, r in df.iterrows():
-            start = pd.to_datetime(r["Start Date"], errors="coerce")
-            end = pd.to_datetime(r["Release Date"], errors="coerce")
-            if pd.isna(start):
-                continue
-            if pd.isna(end):
-                end = start
-            events.append({
-                "title": f"{r['Project ID']} - {r['Project Name']}",
-                "start": start.strftime("%Y-%m-%d"),
-                "end": end.strftime("%Y-%m-%d"),
-                "color": self.color(r["Project ID"])
-            })
-        calendar(
-            events=events,
-            options={
-                "initialView": "dayGridMonth",
-                "headerToolbar": {
-                    "left": "prev,next today",
-                    "center": "title",
-                    "right": "dayGridMonth,timeGridWeek"
-                },
-                "height": 700
-            },
-            key="calendar"
-        )
+            if not filtered.empty:
+                selected_row = filtered.iloc[0]
+                with st.form("edit_form"):
+                    new_name = st.text_input("Project Name", selected_row["Project Name"])
+                    new_type = st.text_input("Project Type", selected_row["Project Type"])
+                    new_team = st.text_input("Team Members", selected_row["Team Members"])
+                    new_status = st.text_input("Job Status", selected_row["Job Status"])
+                    new_start = st.text_input("Start Date", selected_row["Start Date"])
+                    new_end = st.text_input("Release Date", selected_row["Release Date"])
+                    save = st.form_submit_button("Save Changes")
+               
+                #Edited data updation          
+                if save:
+                    df.loc[df["Project ID"] == selected_id, "Project Name"] = new_name
+                    df.loc[df["Project ID"] == selected_id,"Project Type"] = new_type
+                    df.loc[df["Project ID"] == selected_id,"Team Members"] = new_team
+                    df.loc[df["Project ID"] == selected_id,"Job Status"] = new_status
+                    df.loc[df["Project ID"] == selected_id,"Start Date"] = new_start
+                    df.loc[ df["Project ID"] == selected_id, "Release Date"] = new_end
+                    self.save_update(df)
+                    st.success("Updated Successfully")
+                    st.rerun()
+                if st.button("Delete Record", key=f"delete_{selected_id}"):
+                    df = df[df["Project ID"] != selected_id]
+                    self.save_update(df)
+                    st.success("Record Deleted")
+                    st.rerun()
+                
+                # Calender view of the job timeline
+                st.divider()
+                st.subheader("Timeline")
+                events = []
+                for _, r in df.iterrows():
+                    start = pd.to_datetime(r["Start Date"], errors="coerce")
+                    end = pd.to_datetime(r["Release Date"], errors="coerce")
+                    if pd.isna(start):
+                        continue
+                    if pd.isna(end):
+                        end = start
+                    events.append({
+                        "title": f"{r['Project ID']} - {r['Project Name']}",
+                        "start": start.strftime("%Y-%m-%d"),
+                        "end": end.strftime("%Y-%m-%d"),
+                        "color": self.color(r["Project ID"])
+                    })
+                calendar(
+                    events=events,
+                    options={
+                        "initialView": "dayGridMonth",
+                        "headerToolbar": {
+                            "left": "prev,next today",
+                            "center": "title",
+                            "right": "dayGridMonth,timeGridWeek"
+                        },
+                        "height": 700
+                    },
+                    key="calendar"
+                )
  
 def show_job_list():
     JobListPage().show()
  
- 
-

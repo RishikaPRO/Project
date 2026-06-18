@@ -30,7 +30,8 @@ div[data-testid="stDataFrame"] { border: 1px solid #DDE2E7; border-radius: 10px;
 .stButton button:hover { background-color: #2B4E7A; }
 </style>
 """, unsafe_allow_html=True)
-        st.caption("View and manage employee information")
+    
+      
  
         # Read Excel
         try:
@@ -98,7 +99,7 @@ div[data-testid="stDataFrame"] { border: 1px solid #DDE2E7; border-radius: 10px;
             st.warning(f"No details found for username: {username}")
 
         role=st.session_state.get("role","").strip().lower()
-        if role=="Team Member":
+        if role=="team member":
             return
         
  
