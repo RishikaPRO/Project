@@ -232,4 +232,3 @@ class JobListPage:
  
 def show_job_list():
     JobListPage().show()
- 
