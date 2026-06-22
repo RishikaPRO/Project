@@ -64,7 +64,7 @@ class LoginPage:
             #Authentication using role and excel data
  
             if login_clicked:
-                if not username or not password:
+                if not username or not password: 
                     st.error(
                         "Please enter both username and password."
                     )

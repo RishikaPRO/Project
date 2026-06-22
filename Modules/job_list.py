@@ -9,7 +9,7 @@ class JobListPage:
 
     #Auto header detection from excel file
     def detect_header_row(self, df):
-        #Find Project_ID 
+        #Find Project_ID                               
         for i in range(min(30, len(df))):
             row = df.iloc[i].astype(str).str.lower()
             if row.str.contains("project id").any():
@@ -36,7 +36,7 @@ class JobListPage:
 
             #Read table data
             df = pd.read_excel(
-               self.FILE,
+               self.FILE,                                                                                                                                                                                                                 
                sheet_name=sheet,
                header=header_row
             )
@@ -50,11 +50,11 @@ class JobListPage:
                 return df[name] if name in df.columns else ""
             for _, r in df.iterrows():
                 pid = r.get("Project ID", "")
-                if pd.isna(pid) or str(pid).strip() == "":
+                if pd.isna(pid) or str(pid).strip() == "":                                      
                     continue
                 pid = str(pid).strip()
                 if pid.lower() in ["nan", "none", "leads", "project id"]:
-                    continue
+                    continue       
                 all_data.append({
                     "Project ID": pid,
                     "Project Name": r.get("Project Name", ""),
@@ -70,6 +70,7 @@ class JobListPage:
     
     # Save data
     def save_update(self, df):
+        
         df.to_excel(self.FILE, index=False)
 
     def color(self, pid):
