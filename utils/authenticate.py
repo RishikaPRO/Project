@@ -10,7 +10,6 @@ def authenticate(username, password):
         st.write("Reading:", file_path)
  
         df = pd.read_excel(file_path)
-        st.write(df)
  
         df.columns = df.columns.str.strip().str.lower()
  
