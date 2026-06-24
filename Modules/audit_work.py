@@ -1,7 +1,7 @@
 import streamlit as st
 import pandas as pd
 from openpyxl import load_workbook
-from styles import load_css,page_banner
+from styles import load_css
  
 class AuditWorkPage:
     #read excel file
@@ -64,7 +64,17 @@ class AuditWorkPage:
         '>
     <h2 style='margin:0;'>Audit Work </h2>
         </div>
-                    """, unsafe_allow_html=True)
+        <style>
+        .audit-table-card { border: 1px solid #7c5cff; border-radius: 16px; background: rgba(124,92,255,0.08); padding: 18px; margin-bottom: 24px; overflow-x: auto; }
+        .audit-table { width: 100%; border-collapse: collapse; margin-top: 16px; font-size: 13px; }
+        .audit-table th, .audit-table td { border: 1px solid rgba(124,92,255,0.16); padding: 10px 12px; text-align: left; }
+        .audit-table th { background: rgba(124,92,255,0.12); color: #f8fbff; font-weight: 700; }
+        .audit-table td { color: #eaf1ff; }
+        .audit-table tr:hover { background: rgba(124,92,255,0.08); }
+        [data-testid="stTabs"] [role="tablist"] { display: flex; gap: 0; }
+        [data-testid="stTabs"] [role="tab"] { flex: 1 1 0; min-width: 0; text-align: center; }
+        </style>
+        """, unsafe_allow_html=True)
 
  
         try:
@@ -96,11 +106,20 @@ class AuditWorkPage:
         for idx, sheet in enumerate(sheet_names):
             with tabs[idx]:
                 sheet_df = df[df["Sheet"] == sheet]
-                st.dataframe(
-                    sheet_df.drop(columns=["Sheet", "Excel_Row"], errors="ignore"),
-                    use_container_width=True,
-                    hide_index=True
-                )
+                display_df = sheet_df.drop(columns=["Sheet", "Excel_Row"], errors="ignore").reset_index(drop=True)
+                table_html = '<div class="audit-table-card">'
+                table_html += '<table class="audit-table">'
+                table_html += '<thead><tr>'
+                for col in display_df.columns:
+                    table_html += f'<th>{col}</th>'
+                table_html += '</tr></thead><tbody>'
+                for _, row in display_df.iterrows():
+                    table_html += '<tr>'
+                    for value in row:
+                        table_html += f'<td>{value}</td>'
+                    table_html += '</tr>'
+                table_html += '</tbody></table></div>'
+                st.markdown(table_html, unsafe_allow_html=True)
 
                 #Reporting Manager dashboard only has Edit and Save options
                 #Creating edit and save buttons and to display the editted details

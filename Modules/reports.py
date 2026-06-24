@@ -86,7 +86,7 @@ class ReportsDashboard:
             status_counts = (df[self.status_col].fillna("Unknown"))
            
             if len(status_counts) > 0:
-                status_colors=["#0c2e46", "#0c4c25", "#6e2ca0", "#7b7947", "#55222d"]
+                status_colors=["#a8e6a8", "#1b4d2e", "#c2f0c2", "#2d5016", "#1a6b34"]
                 fig = px.pie(df, names=self.status_col, title="Status Breakdown",color=self.status_col, color_discrete_sequence=status_colors)
         
                 elements.append(Paragraph("Status Breakdown", styles["Heading2"]))
@@ -100,7 +100,7 @@ class ReportsDashboard:
             temp[self.date_col] = pd.to_datetime(temp[self.date_col], errors="coerce")
             temp = temp.dropna(subset=[self.date_col])
             if not temp.empty:
-                fig2 = px.histogram(temp, x=self.date_col, title="Timeline", color_discrete_sequence=["#17becf"])
+                fig2 = px.histogram(temp, x=self.date_col, title="Timeline", color_discrete_sequence=["#a8e6a8"])
                 elements.append(Paragraph("Timeline", styles["Heading2"]))
                 elements.append(Spacer(1, 5))
                 elements.append(RLImage(plotly_to_image(fig2), width=450, height=280))
@@ -140,6 +140,21 @@ class ReportsDashboard:
     <h2 style='margin:0;'>Reports Dashboard</h2>
     <p style='margin:0;opacity:0.8;'>Employee analytics & reporting system</p>
     </div>
+    <style>
+    body { background: #070b14 !important; }
+    .stApp { background: #070b14 !important; }
+    [data-testid="stAppViewContainer"] { background: #070b14 !important; }
+    .report-card { border: 1px solid #7c5cff; border-radius: 16px; background: rgba(124,92,255,0.08); padding: 18px; margin-bottom: 16px; }
+    .report-card h3 { margin: 0 0 8px; color: #f8fbff; font-size: 18px; }
+    .report-card p { margin: 0; color: #c5d2ff; font-size: 14px; }
+    .employee-card { border: 1px solid #7c5cff; border-radius: 16px; background: rgba(124,92,255,0.08); padding: 18px; margin-bottom: 18px; }
+    .employee-card h3 { margin: 0 0 6px; color: #f8fbff; }
+    .employee-card p { margin: 0; color: #c5d2ff; }
+    [data-testid="stDataFrame"] { border: 1px solid rgba(124,92,255,0.16) !important; border-radius: 12px !important; background: rgba(124,92,255,0.05) !important; }
+    [data-testid="stDataFrame"] th { background: rgba(124,92,255,0.12) !important; color: #f8fbff !important; }
+    [data-testid="stDataFrame"] td { color: #eaf1ff !important; }
+    .stPlotlyChart { border: 1px solid #7c5cff; border-radius: 12px; background: rgba(124,92,255,0.04); padding: 12px; margin-bottom: 18px; }
+    </style>
         """, unsafe_allow_html=True)
 
         # Overall Insights based on Job Status 
@@ -148,8 +163,10 @@ class ReportsDashboard:
             fig = px.histogram(
                 self.df,
                 x=self.status_col,
-                color=self.status_col
+                color=self.status_col,
+                color_discrete_sequence=["#a8e6a8", "#1b4d2e", "#c2f0c2", "#2d5016", "#1a6b34"]
             )
+            fig.update_layout(plot_bgcolor="rgba(124,92,255,0.08)", paper_bgcolor="#070b14", font=dict(color="#eaf1ff"))
             st.plotly_chart(fig, use_container_width=True, key="overall_status_histogram")
 
         #Individual team members data display    
@@ -172,15 +189,10 @@ class ReportsDashboard:
             if emp_df.empty:
                 continue
             st.markdown(f"""
-                        <div style=" 
-                        background:white;
-                        border-radius:16px;
-                        padding:18px;
-                        margin-bottom:8px;
-                        box-shadow:0 2px 12px rgba(0,0,0,0.08);">
-                        <h3 style="margin-bottom:5px;">{emp}</h3>
-                        <p style="color:gray;margin:0;"> {len(emp_df)} Records
-                        </p></div>""", unsafe_allow_html=True)
+                        <div class="employee-card">
+                        <h3>{emp}</h3>
+                        <p>{len(emp_df)} Records</p>
+                        </div>""", unsafe_allow_html=True)
             
             #Display of the logged in member s details
             if role == "Team Member":
@@ -189,7 +201,8 @@ class ReportsDashboard:
                 st.dataframe(emp_df, use_container_width=True, height=table_height)
                 if self.status_col:
                     st.markdown("#### Status Breakdown")
-                    fig = px.pie(emp_df, names=self.status_col, hole=0.45)
+                    fig = px.pie(emp_df, names=self.status_col, hole=0.45, color_discrete_sequence=["#a8e6a8", "#1b4d2e", "#c2f0c2", "#2d5016", "#1a6b34"])
+                    fig.update_layout(plot_bgcolor="rgba(124,92,255,0.08)", paper_bgcolor="#070b14", font=dict(color="#eaf1ff"))
                     st.plotly_chart(fig, use_container_width=True)
                 if self.date_col:
                     temp = emp_df.copy()
@@ -198,7 +211,8 @@ class ReportsDashboard:
                         errors="coerce"
                     )
                     st.markdown("#### Timeline")
-                    fig2 = px.histogram(temp, x=self.date_col, nbins=20)
+                    fig2 = px.histogram(temp, x=self.date_col, nbins=20, color_discrete_sequence=["#a8e6a8"])
+                    fig2.update_layout(plot_bgcolor="rgba(124,92,255,0.08)", paper_bgcolor="#070b14", font=dict(color="#eaf1ff"))
                     st.plotly_chart(fig2, use_container_width=True)
             else:
                 #cumulative display of employee details for reporting manager
@@ -215,8 +229,10 @@ class ReportsDashboard:
                         fig = px.pie(
                             emp_df,
                             names=self.status_col,
-                            hole=0.45
+                            hole=0.45,
+                            color_discrete_sequence=["#a8e6a8", "#1b4d2e", "#c2f0c2", "#2d5016", "#1a6b34"]
                         )
+                        fig.update_layout(plot_bgcolor="rgba(124,92,255,0.08)", paper_bgcolor="#070b14", font=dict(color="#eaf1ff"))
                         st.plotly_chart(
                             fig,
                             use_container_width=True,
@@ -232,8 +248,10 @@ class ReportsDashboard:
                         fig2 = px.histogram(
                             temp,
                             x=self.date_col,
-                            nbins=20
+                            nbins=20,
+                            color_discrete_sequence=["#a8e6a8"]
                         )
+                        fig2.update_layout(plot_bgcolor="rgba(124,92,255,0.08)", paper_bgcolor="#070b14", font=dict(color="#eaf1ff"))
                         st.plotly_chart(
                             fig2,
                             use_container_width=True,

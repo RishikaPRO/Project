@@ -1,5 +1,5 @@
 import streamlit as st
-from utils.auth import authenticate
+from utils.authenticate import authenticate
  
  
 class LoginPage:
@@ -16,10 +16,10 @@ class LoginPage:
                 <div style="text-align:center; padding: 2rem 0 1rem 0;">
                 <div style="font-family:'Syne',sans-serif; font-size:2.4rem;
                 font-weight:800; color:#0d1117; letter-spacing:-1px;">
-                AD<span style="color:#f97316">-Tools</span>
+                Gunma <span style="color:#f97316">WorkVista</span>
                 </div>
                 <div style="color:#6e7681; font-size:0.85rem; margin-top:0.25rem;">
-                Project Management & Audit System
+
                 </div>
                 </div>
                 """,
@@ -40,8 +40,7 @@ class LoginPage:
                 placeholder="Enter your username"
             )
  
-            password = st.text_input(
-                "Password",
+            password = st.text_input("Password",
                 type="password",
                 placeholder="Enter your password"
             )
@@ -50,31 +49,20 @@ class LoginPage:
             col_a, col_b = st.columns(2)
  
             with col_a:
-                login_clicked = st.button(
-                    "Login",
-                    use_container_width=True
-                )
- 
+                login_clicked = st.button("Login",use_container_width=True)
             with col_b:
-                if st.button(
-                    "Reset",
-                    use_container_width=True
-                ):
+                if st.button("Reset",use_container_width=True):
                     st.rerun()
             #Authentication using role and excel data
  
             if login_clicked:
                 if not username or not password: 
-                    st.error(
-                        "Please enter both username and password."
-                    )
+                    st.error("Please enter both username and password.")
                 else:
                     user = authenticate(username, password)
  
                     if user:
-                        if (
-                            user["role"] == role_choice
-                            or (
+                        if (user["role"] == role_choice or (
                                 role_choice == "Reporting Manager"
                                 and user["role"] == "Reporting Manager"
                             )
@@ -103,12 +91,6 @@ class LoginPage:
                         )
  
             st.markdown("</div>", unsafe_allow_html=True)
- 
-            st.markdown(
-                '<div style="text-align:center; color:#6e7681; font-size:0.75rem;'
-                'margin-top:1.5rem;">AD-Tools Team · AD_Tools</div>',
-                unsafe_allow_html=True,
-            )
  
  
 def show_login():

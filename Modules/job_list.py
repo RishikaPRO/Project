@@ -90,6 +90,15 @@ class JobListPage:
         '>
     <h2 style='margin:0;'>Job List Dashboard </h2>
         </div>
+        <style>
+        .project-table-card { border: 1px solid #7c5cff; border-radius: 16px; background: rgba(124,92,255,0.08); padding: 14px; margin-bottom: 24px; max-width: 100%; overflow-x: auto; }
+        .project-table { width: 100%; border-collapse: collapse; margin-top: 12px; font-size: 13px; }
+        .project-table th, .project-table td { border: 1px solid rgba(124,92,255,0.16); padding: 8px 10px; text-align: left; }
+        .project-table th { background: rgba(124,92,255,0.12); color: #f8fbff; font-weight: 700; }
+        .project-table td { color: #eaf1ff; }
+        .project-table tr:hover { background: rgba(124,92,255,0.08); }
+        .project-table h4 { margin: 0 0 8px; color: #f8fbff; font-size: 16px; }
+        </style>
                     """, unsafe_allow_html=True)
         
         df = self.load_data()
@@ -117,15 +126,16 @@ class JobListPage:
                 else:
                     border = "#1a3054"
                 st.markdown(
-                    f"""
+    f"""
 <div style="
-               background:white;
-               padding:20px;
-               border-radius:12px;
-               margin-bottom:15px;
-               border-left:8px solid {border};
-               box-shadow:0 2px 8px rgba(0,0,0,0.1);
-           ">
+    background:#1e293b;
+    color:white;
+    padding:20px;
+    border-radius:12px;
+    margin-bottom:15px;
+    border-left:8px solid {border};
+    box-shadow:0 2px 8px rgba(0,0,0,0.1);
+">
 <h3>{row['Project Name']}</h3>
 <p><b>Project ID:</b> {row['Project ID']}</p>
 <p><b>Project Type:</b> {row['Project Type']}</p>
@@ -166,7 +176,20 @@ class JobListPage:
         #reporting manager view
         else:
             st.subheader("Project Table")
-            st.dataframe(df, use_container_width=True)
+            table_html = '<div class="project-table-card">'
+            table_html += '<h4>Project Table</h4>'
+            table_html += '<table class="project-table">'
+            table_html += '<thead><tr>'
+            for col in df.columns:
+                table_html += f'<th>{col}</th>'
+            table_html += '</tr></thead><tbody>'
+            for _, row in df.iterrows():
+                table_html += '<tr>'
+                for value in row:
+                    table_html += f'<td>{value}</td>'
+                table_html += '</tr>'
+            table_html += '</tbody></table></div>'
+            st.markdown(table_html, unsafe_allow_html=True)
             st.divider()
             st.subheader("Edit Project")
             project_ids = df["Project ID"].dropna().unique().tolist()
@@ -200,7 +223,7 @@ class JobListPage:
                     st.success("Record Deleted")
                     st.rerun()
                 
-                # Calender view of the job timeline
+                # Calendar view of the job timeline
                 st.divider()
                 st.subheader("Timeline")
                 events = []

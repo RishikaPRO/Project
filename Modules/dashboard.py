@@ -1,260 +1,166 @@
-import streamlit as st
-import pandas as pd
-import plotly.express as px
+import json
 from pathlib import Path
-from styles import load_css
+import pandas as pd
+import streamlit as st
+import streamlit.components.v1 as components
+from Modules.dashboard_layout import inject_dashboard_page_styles
+from Modules.dashboard_template import build_dashboard_html
 
 
-class EmployeeDashboard:
-    def __init__(self):
-        #load excel data
-        self.file_path = "dashboard.xlsx"
-        self.employee_df = pd.DataFrame()
-        self.leave_df = pd.DataFrame()
-        self.projects_df = pd.DataFrame()
+class DashboardPage:
+    """Encapsulates dashboard logic, data loading, and rendering."""
 
-        self.load_data()
-    
+    FILE = "dashboard.xlsx"
 
-    def load_data(self):
+    @staticmethod
+    @st.cache_data
+    def load_data(fp):
+        """Load Excel sheets used by the dashboard."""
+        if not Path(fp).exists():
+            return None, None, None
+
         try:
-            if not Path(self.file_path).exists():
-                st.error(f"File not found: {self.file_path}")
-                st.stop()
-            self.employee_df = pd.read_excel(self.file_path,sheet_name="Employee")
+            employees = pd.read_excel(fp, sheet_name="Employee").fillna("")
+            leaves = pd.read_excel(fp, sheet_name="Leave").fillna(0)
+            jobs = pd.read_excel(fp, sheet_name="Job_list").fillna("")
+            return employees, leaves, jobs
+        except Exception as ex:
+            st.error(f"Error reading Excel sheets: {ex}")
+            return None, None, None
 
-            self.leave_df = pd.read_excel(self.file_path,sheet_name="Leave")
-            self.projects_df = pd.read_excel(self.file_path,sheet_name="Job_list")
-            self.employee_df.fillna("", inplace=True)
-            self.leave_df.fillna(0, inplace=True)
-            self.projects_df.fillna("", inplace=True)
-        except Exception as e:
-            st.error(f"Error loading data: {e}")
-            st.stop()
-    #Retrive total leave per month from excel file
-    def get_total_leave_month(self):
-        if "Leaves This Month" in self.leave_df.columns:
-            return self.leave_df["Leaves This Month"].sum()
-        return 0
-    #Retrive total leave in a year from excel file
-    def get_total_leave_year(self):
-        if "Leaves This Month.1" in self.leave_df.columns:
-            return self.leave_df["Leaves This Month.1"].sum()
-            
-        return 0
-    #retreiving leave data from excel file
-    def get_employee_leave(self, employee_name):
-        try:
-            leave_row = self.leave_df[self.leave_df["Name"].astype(str).str.strip().str.lower()== employee_name.strip().lower()]
-            if leave_row.empty:
-                return {
-                    "month": 0,
-                    "year": 0,
-                    "remaining": 0
-                }
-            month_leave = leave_row["Leaves This Month"].iloc[0]
-            year_leave = leave_row["Leaves This Month.1"].iloc[0]
-            return {
-                "month": month_leave,
-                "year": year_leave,
-                "remaining": max(24 - year_leave, 0)
-            }
-        except Exception:
-            return {
-                "month": 0,
-                "year": 0,
-                "remaining": 0
-            }
-    #retreiving project data from excel file
-    def get_employee_projects(self, employee_name):
-        try:
-            return self.projects_df[self.projects_df["Team Members"].astype(str).str.contains(employee_name, case=False, na=False)]
-        except Exception:
-            return pd.DataFrame()
-    #display metrics in dashboard
-    def create_metrics(self):
-        total_employees = len(self.employee_df)
-        total_projects = len(self.projects_df)
-        total_leave_month = self.get_total_leave_month()
-        total_leave_year = self.get_total_leave_year()
-        col1, col2, col3, col4 = st.columns(4)
-        with col1:
-            st.metric("Total Employees",total_employees)
-        with col2:
-            st.metric("Total Projects",total_projects)
-        with col3:
-            st.metric("Leave This Month",int(total_leave_month))
-        with col4:
-            st.metric("Leave This Year",round(total_leave_year, 1))
+    @staticmethod
+    def emp_leave(ldf, name):
+        """Return leave summary for a single employee."""
+        row = ldf[ldf["Name"].astype(str).str.strip().str.lower() == name.strip().lower()]
+        if row.empty:
+            return {"month": 0, "year": 0, "remaining": 24}
 
-     
-    #display charts from retrieved data through plotly
+        month_leaves = float(row["Leaves This Month"].iloc[0]) if "Leaves This Month" in ldf.columns else 0
+        year_leaves = float(row["Leaves This Month.1"].iloc[0]) if "Leaves This Month.1" in ldf.columns else 0
+        return {"month": month_leaves, "year": year_leaves, "remaining": max(24 - year_leaves, 0)}
 
-    def create_charts(self):
+    @staticmethod
+    def emp_projs(pdf, name):
+        """Return projects that include the employee in team members."""
+        return pdf[pdf["Team Members"].astype(str).str.contains(name, case=False, na=False)]
 
-        st.subheader("Analytics")
-        c1,c2= st.columns(2)
-        with c1:
-            dept_fig = px.pie(self.employee_df,names="Department",title="Department Distribution")
-            st.plotly_chart(dept_fig, use_container_width=True)
-        with c2:
-            project_fig = px.pie(self.projects_df,names="Job Status",title="Project Status Distribution")
-            st.plotly_chart(project_fig,use_container_width=True)
-    
-    def employee_directory(self):
-        role = st.session_state.get("role", "").strip().lower()
-        username = st.session_state.get("Username", "").strip().lower()
+    @staticmethod
+    def build_json(edf, ldf, pdf, role, uname):
+        """Build the dashboard data payload for the HTML template."""
+        palette = ["#4f8dff", "#7c5cff", "#00e5cc", "#ffb432", "#ff6b9d", "#ff8c55", "#a78bfa", "#34d399"]
+        status_colors = {
+            "In Progress": "#00e5cc",
+            "Completed": "#4f8dff",
+            "On Hold": "#ffb432",
+            "Review": "#7c5cff",
+        }
+        status_progress = {
+            "Completed": 100,
+            "Review": 85,
+            "In Progress": 50,
+            "On Hold": 25,
+        }
 
-        #To view individual team member details
-        if role == "team member":
+        employees = []
+        for idx, (_, row) in enumerate(edf.iterrows()):
+            name = str(row.get("Name", "")).strip()
+            if not name or (role == "team member" and str(row.get("Username", "")).strip().lower() != uname):
+                continue
 
-            my_employee = self.employee_df[
-                self.employee_df["Username"]
-                .astype(str)
-                .str.strip()
-                .str.lower() == username
-            ]
-
-            if my_employee.empty:
-                st.warning("Employee details not found.")
-                return
-
-            st.subheader("My Details")
-
-            employee = my_employee.iloc[0]
-            self.show_employee_details(employee)
-
-            return
-
-        # Reporting Manager Dashboard
-        st.subheader("Employee Directory")
-
-        col1, col2 = st.columns(2)
-
-        with col1:
-            search = st.text_input("Search Employee")
-
-        with col2:
-            departments = ["All"] + sorted(
-                self.employee_df["Department"]
-                .astype(str)
-                .unique()
-                .tolist()
-            )
-            department_filter = st.selectbox("Department", departments)
-
-        filtered_df = self.employee_df.copy()
-
-        if search:
-            filtered_df = filtered_df[
-                filtered_df["Name"]
-                .astype(str)
-                .str.contains(search, case=False, na=False)
-            ]
-
-        if department_filter != "All":
-            filtered_df = filtered_df[
-                filtered_df["Department"] == department_filter
-            ]
-
-        directory_data = []
-        #display directory data from excel file
-
-        for _, row in filtered_df.iterrows():
-            emp_name = row["Name"]
-            leave_info = self.get_employee_leave(emp_name)
-            projects = self.get_employee_projects(emp_name)
-
-            directory_data.append({
-                "Employee Name": emp_name,
-                "Department": row["Department"],
-                "Role": row["Role"],
-                "Projects Assigned": len(projects),
-                "Leave This Month": leave_info["month"]
+            leave_summary = DashboardPage.emp_leave(ldf, name)
+            employees.append({
+                "name": name,
+                "role": str(row.get("Role", "")),
+                "dept": str(row.get("Department", "")),
+                "empId": str(row.get("Employe ID", "")),
+                "username": str(row.get("Username", "")),
+                "dob": str(row.get("DOB", "")),
+                "joined": str(row.get("Date of Joining", "")),
+                "email": str(row.get("Email", "")),
+                "phone": str(row.get("Phone no", "")),
+                "projects": len(DashboardPage.emp_projs(pdf, name)),
+                "leaveMonth": round(leave_summary["month"], 1),
+                "leaveYear": round(leave_summary["year"], 1),
+                "leaveRemaining": round(leave_summary["remaining"], 1),
+                "active": leave_summary["month"] == 0,
+                "color": palette[idx % len(palette)],
             })
 
-        st.dataframe(
-            pd.DataFrame(directory_data),
-            use_container_width=True,
-            hide_index=True
-        )
+        projects = []
+        for _, row in pdf.iterrows():
+            status = str(row.get("Job Status", "")).strip()
+            members = str(row.get("Team Members", ""))
+            initials = [
+                "".join(part.strip()[0].upper() for part in member.split() if member.strip())
+                for member in members.split(",")
+                if member.strip()
+            ][:4]
+            projects.append({
+                "name": str(row.get("Project Name", "")),
+                "id": str(row.get("Project ID", "")),
+                "type": str(row.get("Project Type", "")),
+                "team": str(row.get("Project Team", "")),
+                "members": members,
+                "teamInitials": initials,
+                "lang": str(row.get("Language", "")),
+                "status": status,
+                "start": str(row.get("Start Date", "")),
+                "release": str(row.get("Release Date", "")),
+                "pct": status_progress.get(status, 40),
+                "color": status_colors.get(status, "#4f8dff"),
+            })
 
-        st.divider()
+        leaves_month = float(ldf["Leaves This Month"].sum()) if "Leaves This Month" in ldf.columns else 0
+        leaves_year = float(ldf["Leaves This Month.1"].sum()) if "Leaves This Month.1" in ldf.columns else 0
 
-        for _, employee in filtered_df.iterrows():
-            self.show_employee_details(employee)
- 
-    def show_employee_details(self, employee):
-        employee_name = employee["Name"]
-        leave_info = self.get_employee_leave(employee_name)
-        employee_projects = self.get_employee_projects(employee_name)
-        with st.expander(f"{employee_name}",expanded=False):
-            st.markdown("### Employee Information")
-            c1, c2 = st.columns(2)
-            with c1:
-                st.write(f"**Employee ID:** {employee['Employe ID']}")
-                st.write(f"**Username:** {employee['Username']}")
-                st.write(f"**Department:** {employee['Department']}")
-                st.write(f"**Role:** {employee['Role']}")
+        return {
+            "metrics": {
+                "totalEmployees": len(edf),
+                "totalProjects": len(pdf),
+                "leaveThisMonth": round(leaves_month, 1),
+                "leaveThisYear": round(leaves_year, 1),
+            },
+            "employees": employees,
+            "projects": projects,
+            "deptCounts": edf["Department"].value_counts().to_dict() if "Department" in edf.columns else {},
+            "projStatus": pdf["Job Status"].value_counts().to_dict() if "Job Status" in pdf.columns else {},
+            "role": role,
+        }
 
-            with c2:
-                st.write(f"**DOB:** {employee['DOB']}")
-                st.write(f"**Date of Joining:** {employee['Date of Joining']}")
-                st.write(f"**Email:** {employee['Email']}")
-                st.write( f"**Phone Number:** {employee['Phone no']}")
-            st.divider()
-            st.markdown("### Leave Information")
-            l1, l2, l3 = st.columns(3)
-            l1.metric("Leave This Month",leave_info["month"])
-            l2.metric( "Leave This Year",leave_info["year"])
-            l3.metric("Leave Remaining",leave_info["remaining"])
-            st.divider()
-            st.markdown("### Project Information")
-            st.metric("Total Projects Assigned", len(employee_projects))
-            if employee_projects.empty:
-                st.info("No projects assigned.")
-            else:
-                for _, project in employee_projects.iterrows():
-                    st.markdown( f"#### {project['Project Name']}")
-                    p1, p2 = st.columns(2)
-                    with p1:
-                        st.write(f"**Project ID:** {project['Project ID']}")
-                        st.write(f"**Project Type:** {project['Project Type']}")
-                        st.write(f"**Project Team:** {project['Project Team']}")
-                        st.write(f"**Language:** {project['Language']}")
-                    with p2:
-                        st.write( f"**Team Members:** {project['Team Members']}")
-                        st.write(f"**Job Status:** {project['Job Status']}")
-                        st.write(f"**Start Date:** {project['Start Date']}")
-                        st.write(f"**Release Date:** {project['Release Date']}")
-                    st.divider()
-    #Calling the employee directory method and team member dashboard information.
-    def run(self):
-        load_css()
-        st.markdown("""
-        <div style='
-        padding:20px;
-            border-radius:12px;
-            background:linear-gradient(90deg,#0f172a,#1e293b);
-            color:white;
-            margin-bottom:20px;
-        '>
-    <h2 style='margin:0;'>Dashboard</h2>
-        </div>
-                    """, unsafe_allow_html=True)
-        st.set_page_config(page_title="Employee Dashboard",layout="wide")
-        st.container()
-        role = st.session_state.get("role", "").strip().lower()
+    def show(self):
+        """Render the dashboard using current Streamlit session data."""
+        role = st.session_state.get("role", "reporting manager").strip().lower()
+        username = st.session_state.get("Username", "").strip().lower()
+        display_name = st.session_state.get("display_name", "User")
+        initials = "".join(part[0].upper() for part in display_name.split() if part)[:2] or "JD"
 
-        if role != "team member":
-            self.create_metrics()
-            st.divider()
+        employees, leaves, jobs = DashboardPage.load_data(self.FILE)
+        if employees is None:
+            st.error(f"Could not load **{self.FILE}**. Ensure sheets match exactly: Employee, Leave, Job_list")
+            return
 
-            self.create_charts()
-            st.divider()
+        dashboard_data = DashboardPage.build_json(employees, leaves, jobs, role, username)
+        html = build_dashboard_html(dashboard_data, initials)
 
-        self.employee_directory()
-        
+        inject_dashboard_page_styles()
+        components.html(html, height=1200, scrolling=True)
+
 
 def show_dashboard():
-    EmployeeDashboard().run()
+    """Compatibility wrapper that renders the dashboard via DashboardPage."""
+    DashboardPage().show()
+
+
+def main():
+    """Entry point for dashboard execution."""
+    st.set_page_config(page_icon="",layout="wide",initial_sidebar_state="expanded" )
+    st.session_state.setdefault("role", "reporting manager")
+    st.session_state.setdefault("Username", "")
+    st.session_state.setdefault("display_name", "Admin User")
+
+    dashboard = DashboardPage()
+    dashboard.show()
+
+
+if __name__ == "__main__":
+    main()

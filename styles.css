@@ -1,0 +1,268 @@
+/* ── WorkSphere Global Styles ─────────────────────────────────────────────── */
+/* Import fonts */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+
+/* ── CSS Variables ─────────────────────────────────────────────────────────── */
+:root {
+  --a: #4f8dff;
+  --b: #7c5cff;
+  --c: #00e5cc;
+  --d: #ffb432;
+  --g: rgba(255, 255, 255, 0.05);
+  --gb: rgba(255, 255, 255, 0.1);
+  --t: #f0f4ff;
+  --m: #8899bb;
+  --bg: #070b14;
+  --bg2: #0d1526;
+}
+
+/* ── Hide Streamlit Chrome ─────────────────────────────────────────────────── */
+#MainMenu, header, footer { visibility: hidden; }
+.block-container { padding: 1rem 2rem 2rem !important; max-width: 100% !important; }
+[data-testid="stSidebar"] > div:first-child { background: #0d1526 !important; border-right: 1px solid var(--gb); }
+[data-testid="stSidebarNav"] a { color: var(--m) !important; font-family: 'Inter', sans-serif; }
+[data-testid="stSidebarNav"] a:hover { color: var(--t) !important; }
+[data-testid="stSidebarNav"] a[aria-current="page"] { color: var(--a) !important; background: rgba(79,141,255,.1) !important; border-radius: 8px; }
+
+/* ── Page Background ───────────────────────────────────────────────────────── */
+html, body,
+[data-testid="stAppViewContainer"],
+[data-testid="stMain"],
+.main {
+  background: var(--bg) !important;
+  color: var(--t) !important;
+  font-family: 'Inter', sans-serif !important;
+}
+
+/* ── Glowing Orb Background ────────────────────────────────────────────────── */
+[data-testid="stAppViewContainer"]::before {
+  content: '';
+  position: fixed;
+  width: 500px; height: 500px;
+  border-radius: 50%;
+  background: var(--a);
+  top: -200px; left: -100px;
+  filter: blur(90px);
+  opacity: 0.12;
+  pointer-events: none;
+  z-index: 0;
+}
+[data-testid="stAppViewContainer"]::after {
+  content: '';
+  position: fixed;
+  width: 400px; height: 400px;
+  border-radius: 50%;
+  background: var(--b);
+  bottom: -100px; right: -100px;
+  filter: blur(90px);
+  opacity: 0.12;
+  pointer-events: none;
+  z-index: 0;
+}
+
+/* ── Typography ────────────────────────────────────────────────────────────── */
+h1, h2, h3, h4, h5, h6 {
+  font-family: 'Inter', sans-serif !important;
+  color: var(--t) !important;
+}
+p, li, span, label, div {
+  color: var(--t);
+  font-family: 'Inter', sans-serif;
+}
+
+/* ── Streamlit Metric Cards ────────────────────────────────────────────────── */
+[data-testid="stMetric"] {
+  background: var(--g) !important;
+  border: 1px solid var(--gb) !important;
+  border-radius: 16px !important;
+  padding: 18px 20px !important;
+  backdrop-filter: blur(20px);
+  transition: transform .3s, box-shadow .3s, border-color .3s;
+}
+[data-testid="stMetric"]:hover {
+  transform: translateY(-4px);
+  border-color: rgba(79,141,255,.4) !important;
+  box-shadow: 0 10px 32px rgba(79,141,255,.14);
+}
+[data-testid="stMetricLabel"] { color: var(--m) !important; font-size: 12px !important; text-transform: uppercase; letter-spacing: .7px; }
+[data-testid="stMetricValue"] { color: var(--a) !important; font-family: 'Inter', sans-serif !important; font-size: 32px !important; font-weight: 700 !important; }
+[data-testid="stMetricDelta"] { color: var(--c) !important; font-size: 11px !important; }
+
+/* ── Streamlit Buttons ─────────────────────────────────────────────────────── */
+[data-testid="stButton"] > button {
+  background: rgba(79,141,255,.1) !important;
+  border: 1px solid rgba(79,141,255,.25) !important;
+  color: var(--a) !important;
+  border-radius: 10px !important;
+  font-family: 'Inter', sans-serif !important;
+  font-size: 13px !important;
+  transition: all .2s !important;
+}
+[data-testid="stButton"] > button:hover {
+  background: rgba(79,141,255,.22) !important;
+  border-color: var(--a) !important;
+  transform: translateY(-1px);
+}
+
+/* ── Streamlit Inputs & Selectbox Container ────────────────────────────────── */
+[data-testid="stTextInput"] input,
+[data-testid="stTextArea"] textarea,
+
+/* Targets the BaseWeb select wrapper container */
+div[data-baseweb="select"] > div {
+  background: #f4f7fb !important;
+  border: 1px solid rgba(0,0,0,.12) !important;
+  border-radius: 10px !important;
+}
+
+/* Force dark text for all elements inside the input fields */
+[data-testid="stTextInput"] input,
+[data-testid="stTextArea"] textarea,
+div[data-baseweb="select"] * {
+  color: #070b14 !important;
+  font-family: 'Inter', sans-serif !important;
+}
+[data-testid="stTextInput"] label,
+[data-testid="stSelectbox"] label,
+[data-testid="stTextArea"] label { 
+  color: var(--m) !important; 
+  font-size: 12px !important; 
+}
+
+/* ── Streamlit Selectbox Dropdown (Portal Menu Fix) ────────────────────────── */
+/* Targets the floating dropdown container attached to the body root */
+[data-testid="stSelectboxVirtualDropdown"] div,
+[data-testid="stSelectboxVirtualDropdown"] span,
+[data-testid="stSelectboxVirtualDropdown"] ul,
+[data-testid="stSelectboxVirtualDropdown"] li {
+ color: #070b14 !important;
+ background-color: #f4f7fb !important;
+}
+/* Handles hover state colors cleanly */
+[data-testid="stSelectboxVirtualDropdown"] li:hover,
+[data-testid="stSelectboxVirtualDropdown"] li:hover * {
+ background-color: rgba(0, 0, 0, 0.08) !important;
+ color: #070b14 !important;
+}
+
+/* ── Streamlit Dataframe / Table ───────────────────────────────────────────────────── */
+[data-testid="stDataFrame"],
+.stDataFrame {
+  background: #c0e6f0 !important;
+  border: none !important;
+  border-radius: 14px !important;
+  overflow: hidden;
+  border-collapse: collapse !important;
+}
+[data-testid="stDataFrame"] th,
+.stDataFrame th {
+  background: #c0e6f0 !important;
+  color: #070b14 !important;
+  font-size: 12px !important;
+  text-transform: uppercase;
+  letter-spacing: .6px;
+  border: none !important;
+  
+}
+[data-testid="stDataFrame"] td,
+.stDataFrame td {
+  color: #070b14 !important;
+  font-size: 13px !important;
+  background: #c0e6f0 !important;
+  border: none !important;
+}
+[data-testid="stDataFrame"] tr:hover td,
+.stDataFrame tr:hover td { background: rgba(0,0,0,.08) !important; }
+
+/* ── Streamlit Tabs ────────────────────────────────────────────────────────── */
+[data-testid="stTabs"] [role="tablist"] {
+  background: var(--g);
+  border: 1px solid var(--gb);
+  border-radius: 12px;
+  padding: 4px;
+  gap: 4px;
+}
+[data-testid="stTabs"] [role="tab"] {
+  background: transparent !important;
+  color: var(--m) !important;
+  border-radius: 8px !important;
+  font-family: 'Inter', sans-serif !important;
+  font-size: 13px !important;
+  border: none !important;
+  transition: all .2s;
+}
+[data-testid="stTabs"] [role="tab"][aria-selected="true"] {
+  background: rgba(79,141,255,.2) !important;
+  color: var(--t) !important;
+  border: 1px solid rgba(79,141,255,.3) !important;
+}
+[data-testid="stTabs"] [role="tabpanel"] { padding-top: 16px !important; }
+
+/* ── Streamlit Expander ────────────────────────────────────────────────────── */
+[data-testid="stExpander"] {
+  background: var(--g) !important;
+  border: 1px solid var(--gb) !important;
+  border-radius: 14px !important;
+  backdrop-filter: blur(20px);
+}
+[data-testid="stExpander"] summary {
+  color: var(--t) !important;
+  font-family: 'Inter', sans-serif !important;
+  font-weight: 500 !important;
+}
+[data-testid="stExpander"] summary:hover { color: var(--a) !important; }
+
+/* ── Streamlit Sidebar ─────────────────────────────────────────────────────── */
+[data-testid="stSidebarContent"] { background: transparent !important; }
+.css-1d391kg, [data-testid="stSidebar"] { background: #0a1120 !important; }
+
+/* ── Streamlit Divider ─────────────────────────────────────────────────────── */
+hr { border-color: var(--gb) !important; }
+
+/* ── Streamlit Success / Error / Info / Warning ────────────────────────────── */
+[data-testid="stAlert"] {
+  border-radius: 12px !important;
+  border: 1px solid var(--gb) !important;
+  backdrop-filter: blur(10px);
+}
+.stSuccess { background: rgba(0,229,204,.08) !important; border-color: rgba(0,229,204,.2) !important; color: var(--c) !important; }
+.stError   { background: rgba(255,80,80,.08)  !important; border-color: rgba(255,80,80,.2)  !important; }
+.stWarning { background: rgba(255,180,50,.08) !important; border-color: rgba(255,180,50,.2) !important; }
+.stInfo    { background: rgba(79,141,255,.08) !important; border-color: rgba(79,141,255,.2) !important; }
+
+/* ── Plotly Charts (dark bg fix) ───────────────────────────────────────────── */
+.js-plotly-plot .plotly, .js-plotly-plot .plotly .svg-container {
+  background: transparent !important;
+}
+
+/* ── Scrollbar ─────────────────────────────────────────────────────────────── */
+::-webkit-scrollbar { width: 5px; height: 5px; }
+::-webkit-scrollbar-track { background: var(--bg); }
+::-webkit-scrollbar-thumb { background: rgba(79,141,255,.3); border-radius: 10px; }
+::-webkit-scrollbar-thumb:hover { background: var(--a); }
+
+/* ── Glass Card utility class (use with st.markdown) ──────────────────────── */
+.glass-card {
+  background: var(--g);
+  border: 1px solid var(--gb);
+  border-radius: 16px;
+  padding: 20px 24px;
+  backdrop-filter: blur(20px);
+  transition: transform .3s, box-shadow .3s, border-color .3s;
+}
+.glass-card:hover {
+  transform: translateY(-4px);
+  border-color: rgba(79,141,255,.35);
+  box-shadow: 0 10px 32px rgba(79,141,255,.13);
+}
+
+
+.grad-text {
+  background: linear-gradient(90deg, var(--a), var(--c));
+  background-clip: text;
+  -webkit-background-clip: text;
+  color: transparent;
+  -webkit-text-fill-color: transparent;
+  font-family: 'Space Grotesk', sans-serif;
+  font-weight: 700;
+}
