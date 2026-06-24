@@ -4,4 +4,4 @@ streamlit
 reportlab
 streamlit-calendar
 plotly
-keleido
+kaleido
