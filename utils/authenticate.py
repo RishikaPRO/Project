@@ -1,8 +1,10 @@
 import pandas as pd
-EXCEL_FILE="Login.xlsx"
+import streamlit as st
 def authenticate(username,password):
     try:
-        df=pd.read_excel(EXCEL_FILE)
+        df=pd.read_excel("Login.xlsx")
+        st.write(df)
+
         print(df.shape)
         df.columns=df.columns.str.strip().str.lower()
         user=df[(df["username"].astype(str).str.strip()==str(username)) & (df["password"].astype(str).str.strip()==str(password))]
