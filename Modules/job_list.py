@@ -96,6 +96,23 @@ class JobListPage:
        .project-table td { color: #eaf1ff; }
        .project-table tr:hover { background: rgba(124,92,255,0.08); }
        .project-table h4 { margin: 0 0 8px; color: #f8fbff; font-size: 16px; }
+                   
+    /*Custom styling for your Streamlit buttons */
+        div.stButton > button, div[data-testid="stForm"] button[type="submit"] {
+            background-color: #1e293b !important;
+            color: #ffffff !important;
+            border: 1px solid #7c5cff !important;
+            border-radius: 8px !important;
+            padding: 0.5rem 1rem !important;
+            transition: all 0.3s ease !important;
+        }
+        /* Hover state style matching your photo */
+        div.stButton > button:hover, div[data-testid="stForm"] button[type="submit"]:hover {
+            background-color: #7c5cff !important;
+            color: #ffffff !important;
+            border-color: #9075ff !important;
+            box-shadow: 0 0 10px rgba(124, 92, 255, 0.5) !important;
+        }
 </style>
        """, unsafe_allow_html=True)
        df = self.load_data()
