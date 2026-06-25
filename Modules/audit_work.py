@@ -152,7 +152,7 @@ class AuditWorkPage:
             color: #ffffff !important;
 
             border-color: #9075ff !important;
-
+                
             box-shadow: 0 0 10px rgba(124, 92, 255, 0.5) !important;
 
         }
