@@ -13,16 +13,32 @@ st.set_page_config(
 # --- Hide Streamlit Menu, Footer, and Floating Decorators ---
 st.markdown("""
 <style>
+/* Hide the entire top app bar / header area */
+header[data-testid="stHeader"] {
+   visibility: hidden;
+   display: none !important;
+}
+/* Specific selectors to target Streamlit cloud injected elements */
 #MainMenu {visibility: hidden;}
 footer {visibility: hidden;}
 header {visibility: hidden;}
-/* Hide GitHub fork button */
-[data-testid="stToolbar"] {
-  display: none !important;
+/* Hide the Deploy button specifically */
+.stAppDeployButton {
+   display: none !important;
+   visibility: hidden;
 }
-/* Hide Streamlit floating button */
+/* Hide the GitHub icon specifically */
+#GithubIcon {
+   visibility: hidden;
+   display: none !important;
+}
+/* Wipe out the remaining top action toolbar wrapper entirely */
+[data-testid="stAppToolbar"] {
+   display: none !important;
+}
+/* Hide Streamlit floating background decorator line */
 [data-testid="stDecoration"] {
-  display: none !important;
+   display: none !important;
 }
 </style>
 """, unsafe_allow_html=True)
