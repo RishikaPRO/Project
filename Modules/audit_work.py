@@ -50,7 +50,15 @@ class AuditWorkPage:
     def save_record(self, sheet_name, excel_row, project_status, audit_type, audit_date, auditee):
         wb = load_workbook(self.AUDIT_FILE)
         ws = wb[sheet_name]
+ 
+    # Update the Excel cells
+        ws.cell(row=excel_row, column=8).value = project_status
+        ws.cell(row=excel_row, column=9).value = audit_type
+        ws.cell(row=excel_row, column=10).value = audit_date
+        ws.cell(row=excel_row, column=11).value = auditee
+ 
         wb.save(self.AUDIT_FILE)
+        wb.close()
     def show(self):
         #loading styles.py for styling the page.
         load_css()
