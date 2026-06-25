@@ -50,40 +50,118 @@ class AuditWorkPage:
        load_css()
        st.markdown("""
 <div style='
+
         padding:20px;
+
         border-radius:12px;
+
         background:linear-gradient(90deg,#0f172a,#1e293b);
+
         color:white;
+
         margin-bottom:20px;
+
         '>
-<h2 style='margin:0;'>Job List Dashboard </h2>
+<h2 style='margin:0;'>Audit Work Dashboard</h2>
 </div>
 <style>
-        .project-table-card { border: 1px solid #7c5cff; border-radius: 16px; background: rgba(124,92,255,0.08); padding: 14px; margin-bottom: 24px; max-width: 100%; overflow-x: auto; }
-        .project-table { width: 100%; border-collapse: collapse; margin-top: 12px; font-size: 13px; }
-        .project-table th, .project-table td { border: 1px solid rgba(124,92,255,0.16); padding: 8px 10px; text-align: left; }
-        .project-table th { background: rgba(124,92,255,0.12); color: #f8fbff; font-weight: 700; }
-        .project-table td { color: #eaf1ff; }
-        .project-table tr:hover { background: rgba(124,92,255,0.08); }
-        .project-table h4 { margin: 0 0 8px; color: #f8fbff; font-size: 16px; }
-        /*Custom styling for your Streamlit buttons */
-        div.stButton > button, div[data-testid="stForm"] button[type="submit"] {
+
+        .audit-table-card { border: 1px solid #7c5cff; border-radius: 16px; background: rgba(124,92,255,0.08); padding: 14px; margin-bottom: 24px; max-width: 100%; overflow-x: auto; }
+
+        .audit-table { width: 100%; border-collapse: collapse; margin-top: 12px; font-size: 13px; }
+
+        .audit-table th, .audit-table td { border: 1px solid rgba(124,92,255,0.16); padding: 8px 10px; text-align: left; }
+
+        .audit-table th { background: rgba(124,92,255,0.12); color: #f8fbff; font-weight: 700; }
+
+        .audit-table td { color: #eaf1ff; }
+
+        .audit-table tr:hover { background: rgba(124,92,255,0.08); }
+
+        /* --- TARGET ONLY THE FORM SUBMIT BUTTON (LEAVES SIDEBAR ALONE) --- */
+
+        div[data-testid="stForm"] button[data-testid="stFormSubmitButton"] {
+
             background-color: #1e293b !important;
+
             color: #ffffff !important;
+
             border: 1px solid #7c5cff !important;
+
             border-radius: 8px !important;
+
             padding: 0.5rem 1rem !important;
+
             transition: all 0.3s ease !important;
+
         }
-        /* Hover state style matching your photo */
-        div.stButton > button:hover, div[data-testid="stForm"] button[type="submit"]:hover {
+
+        /* --- HOVER STATE FOR FORM BUTTON ONLY --- */
+
+        div[data-testid="stForm"] button[data-testid="stFormSubmitButton"]:hover {
+
             background-color: #7c5cff !important;
+
             color: #ffffff !important;
+
             border-color: #9075ff !important;
+
             box-shadow: 0 0 10px rgba(124, 92, 255, 0.5) !important;
+
         }
 </style>
-                    """, unsafe_allow_html=True)
+ 
+<style>
+
+        .audit-table-card { border: 1px solid #7c5cff; border-radius: 16px; background: rgba(124,92,255,0.08); padding: 14px; margin-bottom: 24px; max-width: 100%; overflow-x: auto; }
+
+        .audit-table { width: 100%; border-collapse: collapse; margin-top: 12px; font-size: 13px; }
+
+        .audit-table th, .audit-table td { border: 1px solid rgba(124,92,255,0.16); padding: 8px 10px; text-align: left; }
+
+        .audit-table th { background: rgba(124,92,255,0.12); color: #f8fbff; font-weight: 700; }
+
+        .audit-table td { color: #eaf1ff; }
+
+        .audit-table tr:hover { background: rgba(124,92,255,0.08); }
+
+        /* --- TARGETS ONLY FORM SUBMIT BUTTONS GLOBALLY (LEAVES SIDEBAR ALONE) --- */
+
+        button[kind="primaryFormSubmit"] {
+
+            background-color: #1e293b !important;
+
+            color: #ffffff !important;
+
+            border: 1px solid #7c5cff !important;
+
+            border-radius: 8px !important;
+
+            padding: 0.5rem 1rem !important;
+
+            transition: all 0.3s ease !important;
+
+        }
+
+        /* --- HOVER STATE --- */
+
+        button[kind="primaryFormSubmit"]:hover {
+
+            background-color: #7c5cff !important;
+
+            color: #ffffff !important;
+
+            border-color: #9075ff !important;
+
+            box-shadow: 0 0 10px rgba(124, 92, 255, 0.5) !important;
+
+        }
+</style>
+ 
+ 
+
+        """, unsafe_allow_html=True)
+ 
  
        try:
            df = self.load_data()
