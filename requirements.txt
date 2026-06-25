@@ -4,4 +4,3 @@ streamlit
 reportlab
 streamlit-calendar
 plotly
-matplotlib
