@@ -40,6 +40,15 @@ header {visibility: hidden;}
 [data-testid="stDecoration"] {
    display: none !important;
 }
+/* === CRITICAL: TARGETS THE BOTTOM RIGHT CORNER BADGES === */
+/* Wipes out the Streamlit Cloud Connection and Manage App overlay entirely */
+div[class^="stViewerBadge"],
+.stViewerBadge,
+[data-testid="stViewerBadge"],
+div[data-testid="stStatusWidget"] {
+   display: none !important;
+   visibility: hidden !important;
+}
 </style>
 """, unsafe_allow_html=True)
 
